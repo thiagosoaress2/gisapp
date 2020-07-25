@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "592218610089",
+    "firebase_url": "https://guby-5eaac.firebaseio.com",
+    "project_id": "guby-5eaac",
+    "storage_bucket": "guby-5eaac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592218610089:android:2420482ee1bb747f518cb8",
+        "android_client_info": {
+          "package_name": "com.gisabasilio.gisapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592218610089-ib7cvkta9itin3muosv1etk3hrk6pm7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaoaJ07oISKldNjMLr9Duc2uyKwUWFg68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592218610089-ib7cvkta9itin3muosv1etk3hrk6pm7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592218610089:android:4147c50e6360afb0518cb8",
+        "android_client_info": {
+          "package_name": "com.saladeaula.gisabasilio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592218610089-trb62uo3mo7va4m0gj2p637ch5e23asl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.saladeaula.gisabasilio",
+            "certificate_hash": "4b95503b55c9e66350dde95d646784128e6edf23"
+          }
+        },
+        {
+          "client_id": "592218610089-ib7cvkta9itin3muosv1etk3hrk6pm7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaoaJ07oISKldNjMLr9Duc2uyKwUWFg68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592218610089-ib7cvkta9itin3muosv1etk3hrk6pm7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
