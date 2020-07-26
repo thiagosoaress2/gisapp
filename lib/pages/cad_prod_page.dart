@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_mobx/flutter_mobx.dart' as mob;
+import 'package:gisapp/Utils/firebase_utils.dart';
 import 'package:gisapp/Utils/permissions_service.dart';
 import 'package:gisapp/Utils/photo_service.dart';
 import 'package:gisapp/classes/product_class.dart';
+import 'package:gisapp/pages/home_page.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -42,6 +46,7 @@ class _CadProdPageState extends State<CadProdPage> {
       decimalSeparator: '.', thousandSeparator: ',');
 
   String moeda;
+
 
   @override
   void initState() {
@@ -79,8 +84,6 @@ class _CadProdPageState extends State<CadProdPage> {
                   icon: Icon(Icons.photo_camera, color: Colors.blueAccent),
                   onPressed: () async {
                     if (permissions) {
-                      //PhotoService().getImage();
-                      //PhotoService().getImage();
                       photoService.getImage();
                     } else {
                       PermissionsService().checkCameraPermission();
@@ -108,7 +111,6 @@ class _CadProdPageState extends State<CadProdPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        //WidgetsConstructor().makeEditText(_codigoPecaController, "Código da peça"),
                         WidgetsConstructor().makeFormEditText(
                             _codigoPecaController, "Código da peça",
                             "Informe o código"),
@@ -123,6 +125,14 @@ class _CadProdPageState extends State<CadProdPage> {
                         WidgetsConstructor().makeFormEditTextForDateFormat(
                             _dataEntregaController, "Data da Entrega",
                             maskFormatterDataEntrega, "Informe a data"),
+                       /* //descontinuado. Nunca funcionou
+                        mob.Observer(
+                          builder: (_){
+                            //se for 0, exibe nada. Se for 1, exibe loading, se for outra coisa exibe nada.
+                            return produto.getState == 0 ? Text("") : produto.getState == 1 ? Center(child: CircularProgressIndicator(),) : Text("");
+                          },
+                        ),
+                        */
                         WidgetsConstructor().makeFormEditText(
                             _descricaoController, "Descrição",
                             "Informe descrição"),
@@ -135,7 +145,7 @@ class _CadProdPageState extends State<CadProdPage> {
                         Container(height: 50.0,
                           child: RaisedButton(
                             onPressed: () async {
-                              setState(() async {
+                              setState(() {
                                 if (formKey.currentState.validate()) { //todos os campos estão ok. Agora falta verificar radio buttons e imagem
 
                                   if(moeda!=null){
@@ -144,55 +154,65 @@ class _CadProdPageState extends State<CadProdPage> {
                                       //aqui não informou imagem
                                       _displaySnackBar(context, "Selecione a imagem");
                                     } else {
-                                      //cadastrar produto
+
+                                      //agora ver se as datas estão ok
+                                      if(_dataCompraController.text.length != 10 || _dataEntregaController.text.length != 10){
+                                        _displaySnackBar(context, "Formato da data errado");
+
+                                      } else {
+
+                                        _displaySnackBar(context, "Salvando informações. Aguarde");
+
+                                        ProductClass produto = new ProductClass("not",
+                                            _codigoPecaController.text,
+                                            _dataCompraController.text,
+                                            _dataEntregaController.text,
+                                            _descricaoController.text,
+                                            "not",
+                                            moeda,
+                                            _notaFiscalController.text,
+                                            double.parse(_precoController.text),
+                                            double.parse(_custoController.text));
+                                        /*
+                                        produto = ProductClass.Novo(produto,
+                                            "not",
+                                            _codigoPecaController.text,
+                                            _dataCompraController.text,
+                                            _dataEntregaController.text,
+                                            _descricaoController.text,
+                                            "not",
+                                            moeda,
+                                            _notaFiscalController.text,
+                                            double.parse(_precoController.text),
+                                            double.parse(_custoController.text));
+
+                                        //agora já tenho o produto criado mas ainda falta id e imagem que vão ser fornecedos apenas na hora de subir estes dados pro firestore.
+                                         */
+                                        moeda =null;
+
+                                        //upload da foto
+                                        String _uploadedFileURL;
+                                        _uploadedFileURL = FirebaseUtils().uploadFile("produtos", "img", photoService.image, produto) as String;
+
+                                        _displaySnackBar(context, "Sucesso. As informações foram salvas!");
+
+                                        //isto impede o user de clicar novamente no botão e salvar duas vezes
+                                        //agora zerar tudo
+                                        photoService.image=null;
+                                        _codigoPecaController.text = "";
+                                        _custoController.text="";
+                                        moeda=null;
+                                        _dataEntregaController.text = "";
+                                        _dataCompraController.text = "";
+                                        _descricaoController.text = "";
+                                        _notaFiscalController.text = "";
+                                        _precoController.text = "";
 
 
-                                      ProductClass produto = ProductClass(
-                                          "not",
-                                          _codigoPecaController.text,
-                                          _dataCompraController.text,
-                                          _dataEntregaController.text,
-                                          _descricaoController.text,
-                                          "not",
-                                          moeda,
-                                          _notaFiscalController.text,
-                                          double.parse(_precoController.text),
-                                          double.parse(_custoController.text));
-                                      //agora já tenho o produto criado mas ainda falta id e imagem que vão ser fornecedos apenas na hora de subir estes dados pro firestore.
 
-                                      //abaixo vamos subir pro storage para pegar o url da foto
-                                      StorageUploadTask task = FirebaseStorage
-                                          .instance.ref()
-                                          .child("produtos")
-                                          .child(DateTime
-                                          .now()
-                                          .millisecondsSinceEpoch
-                                          .toString())
-                                          .putFile(photoService.image);
 
-                                      StorageTaskSnapshot taskSnapshot = await task
-                                          .onComplete.then((snapshot) async {
-                                        produto.imagem =
-                                            snapshot.ref.getDownloadURL()
-                                                .toString();
+                                      }
 
-                                        //chama a classe que faz o upload do produto para o mapa e atualiza o id no produto
-                                        ProductClass.upLoadMap(produto);
-
-                                        return snapshot;
-                                      });
-
-                                      //agora vamos exibir um loading enquanto carrega os dados pro firebase
-                                      mob.Observer(
-                                          builder: (
-                                              _) { //_ pq nao passamos nenhum parametro
-                                            return produto.getState == 0
-                                                ? Center(
-                                              child: CircularProgressIndicator(),
-                                            )
-                                                : Container();
-                                          }
-                                      );
                                     }
 
                                   } else { //se nao tiver escolhido moeda
@@ -202,6 +222,7 @@ class _CadProdPageState extends State<CadProdPage> {
 
                                 }
                               });
+
                             },
                             padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
                             textColor: Colors.white,
@@ -214,7 +235,7 @@ class _CadProdPageState extends State<CadProdPage> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 50.0,)
+                        SizedBox(height: 50.0,),
                       ],
                     ),
                   )
@@ -295,6 +316,9 @@ class _CadProdPageState extends State<CadProdPage> {
   }
 
 }
+
+
+
 
 
 

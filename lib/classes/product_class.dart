@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gisapp/pages/cad_prod_page.dart';
 import 'package:mobx/mobx.dart';
 
 class ProductClass {
@@ -23,8 +24,15 @@ class ProductClass {
   ProductClass(this.pId, this.codigo, this.dataCompra, this.dataEntrega,
       this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
       this.preco, this.custo){
-
     _changeState = Action(_changeState);  //initial state do mobx observer
+
+  }
+
+  ProductClass.Novo(ProductClass productClass, this.pId, this.codigo, this.dataCompra, this.dataEntrega,
+      this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
+      this.preco, this.custo){
+
+    //_changeState = Action(_changeState);  //initial state do mobx observer
   }
 
   void changeState(){  //esta função vai ser chamada e vai incrementar o valor. Sempre que o valor mudar, será chamado o elemento na outra página que redesenha a tela.
@@ -54,6 +62,8 @@ class ProductClass {
 
   void addToBd(ProductClass product) async {
 
+    changeState();
+
     //registrando o pedido no bd dos pedidos
     DocumentReference refOrder = await Firestore.instance.collection("produtos")
         .add({
@@ -75,13 +85,15 @@ class ProductClass {
       collectionReference.document(value.documentID)
           .updateData({"productId": value.documentID.toString()})
           .whenComplete(() async {
-          changeState();
+
+            product.pId = value.documentID;
+            changeState();
+
       }).catchError((e) => (){
         changeState();
       });
     }
     );
 
-    product.pId = refOrder.documentID;
   }
 }

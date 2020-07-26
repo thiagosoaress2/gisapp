@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.shopping_cart, "Cadastrar peça", Theme.of(context).primaryColor, context),
+                child: _drawLine(Icons.shopping_cart, "Registrar venda", Theme.of(context).primaryColor, context),
               ),
             ),InkWell( //item 4 Situação vendedoras
               onTap: (){ //click
