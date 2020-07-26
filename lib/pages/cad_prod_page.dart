@@ -1,12 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_mobx/flutter_mobx.dart' as mob;
-import 'package:gisapp/Models/product_model.dart';
 import 'package:gisapp/Utils/permissions_service.dart';
 import 'package:gisapp/Utils/photo_service.dart';
-import 'package:gisapp/data/product_data.dart';
+import 'package:gisapp/classes/product_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -146,35 +146,53 @@ class _CadProdPageState extends State<CadProdPage> {
                                     } else {
                                       //cadastrar produto
 
-                                        StorageUploadTask task =
-                                        FirebaseStorage.instance.ref().child("produtos")
-                                            .child(DateTime.now().millisecondsSinceEpoch.toString()).putFile(photoService.image);
 
-                                        StorageTaskSnapshot taskSnapshot =  await task.onComplete;
-                                        String url = await taskSnapshot.ref.getDownloadURL().then((snapshot){
+                                      ProductClass produto = ProductClass(
+                                          "not",
+                                          _codigoPecaController.text,
+                                          _dataCompraController.text,
+                                          _dataEntregaController.text,
+                                          _descricaoController.text,
+                                          "not",
+                                          moeda,
+                                          _notaFiscalController.text,
+                                          double.parse(_precoController.text),
+                                          double.parse(_custoController.text));
+                                      //agora já tenho o produto criado mas ainda falta id e imagem que vão ser fornecedos apenas na hora de subir estes dados pro firestore.
 
-                                          ProductModel product = ProductModel("not", _codigoPecaController.text,
-                                          _dataCompraController.text, _dataEntregaController.text, _descricaoController.text,
-                                          taskSnapshot.ref.getDownloadURL().toString(), moeda, _notaFiscalController.text, double.parse(_precoController.text), double.parse(_custoController.text));
+                                      //abaixo vamos subir pro storage para pegar o url da foto
+                                      StorageUploadTask task = FirebaseStorage
+                                          .instance.ref()
+                                          .child("produtos")
+                                          .child(DateTime
+                                          .now()
+                                          .millisecondsSinceEpoch
+                                          .toString())
+                                          .putFile(photoService.image);
 
-                                          //ProductModel().addProduct(product);
-                                          ProductData().pId = 'not';
-                                          ProductData().codigo = _codigoPecaController.text;
-                                          ProductData().dataCompra = _dataCompraController.text;
-                                          ProductData().dataEntrega = _dataEntregaController.text;
-                                          ProductData().descricao = _descricaoController.text;
-                                          ProductData().imagem = taskSnapshot.ref.getDownloadURL().toString();
-                                          ProductData().moedaCompra = moeda;
-                                          ProductData().notaFiscal = _notaFiscalController.text;
-                                          ProductData().preco = double.parse(_precoController.text);
-                                          ProductData().custo = double.parse(_custoController.text);
-                                          ProductData().addToBd();
+                                      StorageTaskSnapshot taskSnapshot = await task
+                                          .onComplete.then((snapshot) async {
+                                        produto.imagem =
+                                            snapshot.ref.getDownloadURL()
+                                                .toString();
 
-                                          return "x";
-                                        });
+                                        //chama a classe que faz o upload do produto para o mapa e atualiza o id no produto
+                                        ProductClass.upLoadMap(produto);
 
+                                        return snapshot;
+                                      });
 
-
+                                      //agora vamos exibir um loading enquanto carrega os dados pro firebase
+                                      mob.Observer(
+                                          builder: (
+                                              _) { //_ pq nao passamos nenhum parametro
+                                            return produto.getState == 0
+                                                ? Center(
+                                              child: CircularProgressIndicator(),
+                                            )
+                                                : Container();
+                                          }
+                                      );
                                     }
 
                                   } else { //se nao tiver escolhido moeda

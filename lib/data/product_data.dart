@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gisapp/classes/product_class.dart';
 
 class ProductData {
 
@@ -36,20 +37,20 @@ class ProductData {
 
   }
 
-  void addToBd() async {
+  void addToBd(ProductClass product) async {
 
     Firestore.instance.collection("produtos").add(
         {
-          'productId' : pId,
-          'codigo' : codigo,
-          'dataCompra' : dataCompra,
-          'dataEntrega' : dataEntrega,
-          'descricao' : descricao,
-          'imagem' : imagem,
-          'moedaCompra' : moedaCompra,
-          'notaFiscal' : notaFiscal,
-          'preco' : preco,
-          'custo' : custo,
+          'productId' : product.pId,
+          'codigo' : product.codigo,
+          'dataCompra' : product.dataCompra,
+          'dataEntrega' : product.dataEntrega,
+          'descricao' : product.descricao,
+          'imagem' : product.imagem,
+          'moedaCompra' : product.moedaCompra,
+          'notaFiscal' : product.notaFiscal,
+          'preco' : product.preco,
+          'custo' : product.custo,
         }
     ).then((value) {
       
