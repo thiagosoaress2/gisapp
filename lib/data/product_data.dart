@@ -36,4 +36,29 @@ class ProductData {
 
   }
 
+  void addToBd() async {
+
+    Firestore.instance.collection("produtos").add(
+        {
+          'productId' : pId,
+          'codigo' : codigo,
+          'dataCompra' : dataCompra,
+          'dataEntrega' : dataEntrega,
+          'descricao' : descricao,
+          'imagem' : imagem,
+          'moedaCompra' : moedaCompra,
+          'notaFiscal' : notaFiscal,
+          'preco' : preco,
+          'custo' : custo,
+        }
+    ).then((value) {
+      
+      Firestore.instance.collection("produtos").document(value.documentID).setData({
+        'productId' : value.documentID.toString()
+      });
+
+    });
+
+  }
+
 }

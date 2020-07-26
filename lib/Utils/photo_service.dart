@@ -1,24 +1,39 @@
 import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobx/mobx.dart';
 
-class PhotoService extends ChangeNotifier {
+class PhotoService {
+
+  PhotoService(){  //init state
+    _changeState = Action(_changeState);
+  }
 
   File image=null;
   final picker = ImagePicker();
 
-  Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  Observable _stateOfFile = Observable(0); //este é o estado que vai mudar para sabermos que o File não é mais null
 
-    notifyListeners();
-    image = File(pickedFile.path);
-    notifyListeners();
+  int get getState => _stateOfFile.value; //retorna o valor de value em int
+
+  Action _changeState; //ação que vai disparar o listener
+
+
+  void changeState(){  //esta função vai ser chamada e vai incrementar o valor. Sempre que o valor mudar, será chamado o elemento na outra página que redesenha a tela.
+    runInAction(
+        () => {
+        _stateOfFile.value++
+        }
+    );
   }
 
-  File get consultFileState => image;
+  Future getImage() async {  //upload da foto
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
 
+    image = File(pickedFile.path);
+    if(image != null){ //se o image é diferente de null, incrementa a variavel que está sendo observada
+      changeState(); //se incrementar saberei que tem foto
+    }
 
+  }
 
 }

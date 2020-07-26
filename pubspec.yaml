@@ -32,17 +32,28 @@ dependencies:
   cloud_firestore: ^0.13.7
   image_picker: ^0.6.7+4
   permission_handler: ^5.0.1+1
-  scoped_model: ^1.0.1
-  provider: ^4.3.1
   http: ^0.12.0+2
+  mobx: ^1.2.1+1
+  flutter_mobx: ^1.1.0+1
+  flutter_masked_text: ^0.7.0
+  mask_text_input_formatter: ^1.0.7
+  group_radio_button: ^1.0.1
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  mobx_codegen: ^1.1.0+1
+  build_runner: ^1.10.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+analyzer:
+  strong-mode: true
+  language:
+    enableSuperMixins: true
 
 # The following section is specific to Flutter.
 flutter:

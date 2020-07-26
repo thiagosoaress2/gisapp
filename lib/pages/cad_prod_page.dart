@@ -1,12 +1,16 @@
-import 'dart:io';
-
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:flutter_mobx/flutter_mobx.dart' as mob;
+import 'package:gisapp/Models/product_model.dart';
 import 'package:gisapp/Utils/permissions_service.dart';
 import 'package:gisapp/Utils/photo_service.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:gisapp/data/product_data.dart';
+import 'package:gisapp/widgets/widgets_constructor.dart';
+import 'package:group_radio_button/group_radio_button.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
-
 
 class CadProdPage extends StatefulWidget {
   @override
@@ -15,7 +19,29 @@ class CadProdPage extends StatefulWidget {
 
 class _CadProdPageState extends State<CadProdPage> {
 
-  bool permissions=false;
+  bool permissions = false;
+
+  PhotoService photoService = PhotoService(); //objeto da classe
+
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
+
+  final TextEditingController _codigoPecaController = TextEditingController();
+  final _custoController = MoneyMaskedTextController(
+      decimalSeparator: '.', thousandSeparator: ',');
+  var maskFormatterDataCompra = new MaskTextInputFormatter(
+      mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
+  final TextEditingController _dataCompraController = TextEditingController();
+  var maskFormatterDataEntrega = new MaskTextInputFormatter(
+      mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
+  final TextEditingController _dataEntregaController = TextEditingController();
+  final TextEditingController _descricaoController = TextEditingController();
+  final TextEditingController _notaFiscalController = TextEditingController();
+  final _precoController = MoneyMaskedTextController(
+      decimalSeparator: '.', thousandSeparator: ',');
+
+  String moeda;
 
   @override
   void initState() {
@@ -26,17 +52,18 @@ class _CadProdPageState extends State<CadProdPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<photo>(
-      create: (context) => photo(),
-      child: Scaffold(
-          appBar: AppBar(
-            title: Text("Cadastrando peça"),
-            centerTitle: true,
-            backgroundColor: Theme
-                .of(context)
-                .primaryColor,
-          ),
-          body: Column(
+    return Scaffold(
+      key: _scaffoldKey, //scafoldkey para snack
+      appBar: AppBar(
+        title: Text("Cadastrando peça"),
+        centerTitle: true,
+        backgroundColor: Theme
+            .of(context)
+            .primaryColor,
+      ),
+      body: ListView(
+        children: <Widget>[
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               SizedBox(height: 30.0,),
@@ -51,54 +78,133 @@ class _CadProdPageState extends State<CadProdPage> {
                   padding: EdgeInsets.fromLTRB(0.0, 12.0, 0.0, 8.0),
                   icon: Icon(Icons.photo_camera, color: Colors.blueAccent),
                   onPressed: () async {
-
-                    if(permissions){
-
+                    if (permissions) {
                       //PhotoService().getImage();
-                      photo().getImage();
-
+                      //PhotoService().getImage();
+                      photoService.getImage();
                     } else {
-
                       PermissionsService().checkCameraPermission();
-
                     }
                   }
               ),
-          Consumer<photo>(
-            builder: (context, model, child) => Center(
-              child: Provider.of<photo>(context).consultFileState == null
-                    ? Text('Nenhuma imagem selecionada.')
-                    : Image.file(PhotoService().image),
 
-            ),
-          ),
+              mob.Observer(
+                builder: (_) {
+                  return Center(
+                      child: photoService.getState == 0
+                          ? Text('Nenhuma imagem selecionada.')
+                          : Container(
+                        height: 150.0,
+                        width: 300.0,
+                        child: Image.file(photoService.image),
+                      )
+                  );
+                },
+              ),
+              Form(
+                  key: formKey,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        //WidgetsConstructor().makeEditText(_codigoPecaController, "Código da peça"),
+                        WidgetsConstructor().makeFormEditText(
+                            _codigoPecaController, "Código da peça",
+                            "Informe o código"),
+                        WidgetsConstructor().makeFormEditTextForCurrency(
+                            _custoController, "Custo", "Informe custo"),
+                        WidgetsConstructor().makeText("informe moeda da compra", Theme.of(context).primaryColor, 18.0, 16.0, 0.0, "center"),
+                        SizedBox(height: 16.0,),
+                        buildRadioOptions(context),
+                        WidgetsConstructor().makeFormEditTextForDateFormat(
+                            _dataCompraController, "Data da compra",
+                            maskFormatterDataCompra, "Informe a data"),
+                        WidgetsConstructor().makeFormEditTextForDateFormat(
+                            _dataEntregaController, "Data da Entrega",
+                            maskFormatterDataEntrega, "Informe a data"),
+                        WidgetsConstructor().makeFormEditText(
+                            _descricaoController, "Descrição",
+                            "Informe descrição"),
+                        WidgetsConstructor().makeFormEditText(
+                            _notaFiscalController, "Nota fiscal",
+                            "Informe a nota"),
+                        WidgetsConstructor().makeFormEditTextForCurrency(
+                            _precoController, "Preço", "Informe o preço"),
+                        SizedBox(height: 35.0,),
+                        Container(height: 50.0,
+                          child: RaisedButton(
+                            onPressed: () async {
+                              setState(() async {
+                                if (formKey.currentState.validate()) { //todos os campos estão ok. Agora falta verificar radio buttons e imagem
 
-              /*
-              Consumer<PhotoService>(
-              builder: (context, myModel, child){
-                return Center(
+                                  if(moeda!=null){
+                                    //se chegou até é pq informou todos os campos e a moeda. Falta apenas verificar imagem
+                                    if(photoService.getState == 0){
+                                      //aqui não informou imagem
+                                      _displaySnackBar(context, "Selecione a imagem");
+                                    } else {
+                                      //cadastrar produto
 
-                  child: PhotoService().image == null
-                      ? Text('Nenhuma imagem selecionada.')
-                      : Image.file(PhotoService().image),
-                );
-              }
-              )
+                                        StorageUploadTask task =
+                                        FirebaseStorage.instance.ref().child("produtos")
+                                            .child(DateTime.now().millisecondsSinceEpoch.toString()).putFile(photoService.image);
 
-               */
+                                        StorageTaskSnapshot taskSnapshot =  await task.onComplete;
+                                        String url = await taskSnapshot.ref.getDownloadURL().then((snapshot){
 
-              /*
-            Center(
-              child: PhotoService().image == null
-                  ? Text('Nenhuma imagem selecionada.')
-                  : Image.file(PhotoService().image),
-            ),
-             */
+                                          ProductModel product = ProductModel("not", _codigoPecaController.text,
+                                          _dataCompraController.text, _dataEntregaController.text, _descricaoController.text,
+                                          taskSnapshot.ref.getDownloadURL().toString(), moeda, _notaFiscalController.text, double.parse(_precoController.text), double.parse(_custoController.text));
+
+                                          //ProductModel().addProduct(product);
+                                          ProductData().pId = 'not';
+                                          ProductData().codigo = _codigoPecaController.text;
+                                          ProductData().dataCompra = _dataCompraController.text;
+                                          ProductData().dataEntrega = _dataEntregaController.text;
+                                          ProductData().descricao = _descricaoController.text;
+                                          ProductData().imagem = taskSnapshot.ref.getDownloadURL().toString();
+                                          ProductData().moedaCompra = moeda;
+                                          ProductData().notaFiscal = _notaFiscalController.text;
+                                          ProductData().preco = double.parse(_precoController.text);
+                                          ProductData().custo = double.parse(_custoController.text);
+                                          ProductData().addToBd();
+
+                                          return "x";
+                                        });
 
 
+
+                                    }
+
+                                  } else { //se nao tiver escolhido moeda
+
+                                    _displaySnackBar(context, "Informe a moeda");
+                                  }
+
+                                }
+                              });
+                            },
+                            padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                            textColor: Colors.white,
+                            color: Theme
+                                .of(context)
+                                .primaryColor,
+                            child: Text(
+                              "Cadastrar peça", style: TextStyle(
+                                fontSize: 18.0),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 50.0,)
+                      ],
+                    ),
+                  )
+              ),
 
             ],
           )
+        ],
       ),
     );
   }
@@ -120,38 +226,59 @@ class _CadProdPageState extends State<CadProdPage> {
       openAppSettings();
     }
 
-    if(statuses[Permission.camera].toString() == "PermissionStatus.granted"){
+    if (statuses[Permission.camera].toString() == "PermissionStatus.granted") {
       permissions = true;
     } else {
       permissions = false;
     }
-
   }
 
   checkPermission() async {
-
     permissions = await PermissionsService().checkCameraPermission();
-
   }
 
+  Widget buildRadioOptions(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RadioButton(
+          description: "Dólar US\$",
+          value: "dolar",
+          groupValue: moeda,
+          onChanged: (value) => setState(
+                () => moeda = value,
+          ),
+        ),
+        RadioButton(
+          description: "Real R\$",
+          value: "real",
+          groupValue: moeda,
+          onChanged: (value) => setState(
+                () => moeda = value,
+          ),
+        ),
+      ],
+    );
+  }
 
+  _displaySnackBar(BuildContext context, String msg) {
+
+    final snackBar = SnackBar(
+      content: Text(msg),
+      duration: Duration(seconds: 5),
+      action: SnackBarAction(
+        label: "Ok",
+        onPressed: (){
+          _scaffoldKey.currentState.hideCurrentSnackBar();
+        },
+      ),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
 
 }
 
 
-class photo extends ChangeNotifier {
 
-  Future getImage() async {
-
-    final pickedFile = await PhotoService().picker.getImage(source: ImageSource.gallery);
-
-    PhotoService().image = File(pickedFile.path);
-    notifyListeners();
-
-  }
-
-  File get consultFileState => PhotoService().image;
-
-}
 
 
