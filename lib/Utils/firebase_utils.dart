@@ -18,11 +18,10 @@ class FirebaseUtils {
     await uploadTask.onComplete;
     print('File Uploaded');
     storageReference.getDownloadURL().then((fileURL) {
-      print(fileURL);
       product.imagem = fileURL;
-      ProductClass.upLoadMap(product);
+      //ProductClass.upLoadMap(product);
+      ProductClass.empty().addToBd(product);
       return fileURL;
     });
   }
-
 }

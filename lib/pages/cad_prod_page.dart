@@ -1,7 +1,4 @@
-import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -10,7 +7,6 @@ import 'package:gisapp/Utils/firebase_utils.dart';
 import 'package:gisapp/Utils/permissions_service.dart';
 import 'package:gisapp/Utils/photo_service.dart';
 import 'package:gisapp/classes/product_class.dart';
-import 'package:gisapp/pages/home_page.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -30,6 +26,8 @@ class _CadProdPageState extends State<CadProdPage> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
+
+  bool isUploading = false;
 
   final TextEditingController _codigoPecaController = TextEditingController();
   final _custoController = MoneyMaskedTextController(
@@ -125,14 +123,9 @@ class _CadProdPageState extends State<CadProdPage> {
                         WidgetsConstructor().makeFormEditTextForDateFormat(
                             _dataEntregaController, "Data da Entrega",
                             maskFormatterDataEntrega, "Informe a data"),
-                       /* //descontinuado. Nunca funcionou
-                        mob.Observer(
-                          builder: (_){
-                            //se for 0, exibe nada. Se for 1, exibe loading, se for outra coisa exibe nada.
-                            return produto.getState == 0 ? Text("") : produto.getState == 1 ? Center(child: CircularProgressIndicator(),) : Text("");
-                          },
-                        ),
-                        */
+                       Center(
+                         child: isUploading ? CircularProgressIndicator() : Text(""),
+                       ),
                         WidgetsConstructor().makeFormEditText(
                             _descricaoController, "Descrição",
                             "Informe descrição"),
@@ -145,8 +138,7 @@ class _CadProdPageState extends State<CadProdPage> {
                         Container(height: 50.0,
                           child: RaisedButton(
                             onPressed: () async {
-                              setState(() {
-                                if (formKey.currentState.validate()) { //todos os campos estão ok. Agora falta verificar radio buttons e imagem
+                              if (formKey.currentState.validate()) { //todos os campos estão ok. Agora falta verificar radio buttons e imagem
 
                                   if(moeda!=null){
                                     //se chegou até é pq informou todos os campos e a moeda. Falta apenas verificar imagem
@@ -161,8 +153,12 @@ class _CadProdPageState extends State<CadProdPage> {
 
                                       } else {
 
-                                        _displaySnackBar(context, "Salvando informações. Aguarde");
+                                        //atualiza para o loading
+                                        setState(() {
+                                          isUploading = true;
+                                        });
 
+                                        //cria o objeto que vai pro upload na class
                                         ProductClass produto = new ProductClass("not",
                                             _codigoPecaController.text,
                                             _dataCompraController.text,
@@ -173,43 +169,32 @@ class _CadProdPageState extends State<CadProdPage> {
                                             _notaFiscalController.text,
                                             double.parse(_precoController.text),
                                             double.parse(_custoController.text));
-                                        /*
-                                        produto = ProductClass.Novo(produto,
-                                            "not",
-                                            _codigoPecaController.text,
-                                            _dataCompraController.text,
-                                            _dataEntregaController.text,
-                                            _descricaoController.text,
-                                            "not",
-                                            moeda,
-                                            _notaFiscalController.text,
-                                            double.parse(_precoController.text),
-                                            double.parse(_custoController.text));
 
-                                        //agora já tenho o produto criado mas ainda falta id e imagem que vão ser fornecedos apenas na hora de subir estes dados pro firestore.
-                                         */
-                                        moeda =null;
 
                                         //upload da foto
-                                        String _uploadedFileURL;
-                                        _uploadedFileURL = FirebaseUtils().uploadFile("produtos", "img", photoService.image, produto) as String;
+                                        FirebaseUtils().uploadFile("produtos", "img", photoService.image, produto).whenComplete(() {
 
-                                        _displaySnackBar(context, "Sucesso. As informações foram salvas!");
+                                          setState(() {
+                                            _displaySnackBar(context, "Sucesso. As informações foram salvas!");
 
-                                        //isto impede o user de clicar novamente no botão e salvar duas vezes
-                                        //agora zerar tudo
-                                        photoService.image=null;
-                                        _codigoPecaController.text = "";
-                                        _custoController.text="";
-                                        moeda=null;
-                                        _dataEntregaController.text = "";
-                                        _dataCompraController.text = "";
-                                        _descricaoController.text = "";
-                                        _notaFiscalController.text = "";
-                                        _precoController.text = "";
+                                            //aqui você pode zerar tudo que tem na tela pra deixar livre novamente
+                                            //photoService.image=0;
+                                            _codigoPecaController.text = "";
+                                            _custoController.text="";
+                                            moeda=null;
+                                            _dataEntregaController.text = "";
+                                            _dataCompraController.text = "";
+                                            _descricaoController.text = "";
+                                            _notaFiscalController.text = "";
+                                            _precoController.text = "";
+
+                                            //remove o loading
+                                            isUploading = false;
+
+                                          });
 
 
-
+                                        });
 
                                       }
 
@@ -221,7 +206,6 @@ class _CadProdPageState extends State<CadProdPage> {
                                   }
 
                                 }
-                              });
 
                             },
                             padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),

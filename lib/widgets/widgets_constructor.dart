@@ -5,10 +5,13 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class WidgetsConstructor {
 
-  Widget makeEditText(TextEditingController controller, String labelTxt){
+  Widget makeEditText(TextEditingController controller, String labelTxt, FocusNode focusNode){
+
+    //passe null em focusnode caso não tenha. Isto serve para dar focus.
 
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(labelText: labelTxt),
     );
 
@@ -122,6 +125,10 @@ class WidgetsConstructor {
         style: TextStyle(fontSize: Size, color: color),
       ),
     );
+  }
+
+  Widget makeSimpleText(String msg, Color color, double Size){
+    return Text(msg, style: TextStyle(color: color, fontSize: Size) ,);
   }
 
 

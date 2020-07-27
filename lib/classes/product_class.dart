@@ -16,39 +16,11 @@ class ProductClass {
   double custo;
 
 
-  //mobX observer para o loading
-  Observable _stateOfUpload = Observable(0); //este é o estado que vai mudar para sabermos que o
-  Action _changeState; //ação que vai disparar o listener
-
   //construtor
   ProductClass(this.pId, this.codigo, this.dataCompra, this.dataEntrega,
       this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
       this.preco, this.custo){
-    _changeState = Action(_changeState);  //initial state do mobx observer
-
   }
-
-  ProductClass.Novo(ProductClass productClass, this.pId, this.codigo, this.dataCompra, this.dataEntrega,
-      this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
-      this.preco, this.custo){
-
-    //_changeState = Action(_changeState);  //initial state do mobx observer
-  }
-
-  void changeState(){  //esta função vai ser chamada e vai incrementar o valor. Sempre que o valor mudar, será chamado o elemento na outra página que redesenha a tela.
-    runInAction(
-            () => {
-          _stateOfUpload.value++
-        }
-    );
-  }
-
-  int get getState => _stateOfUpload.value; //retorna o valor de value em int
-
-  //este ainda não tem o id.
-  ProductClass.inicial(this.codigo, this.dataCompra, this.dataEntrega,
-      this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
-      this.preco, this.custo);
 
 
   ProductClass updateImageInfo(ProductClass productClass, String urlImg) {
@@ -56,13 +28,9 @@ class ProductClass {
     return productClass;
   }
 
-  ProductClass.upLoadMap(ProductClass productClass){
-    addToBd(productClass);
-  }
+  ProductClass.empty();
 
-  void addToBd(ProductClass product) async {
-
-    changeState();
+  Future<bool> addToBd(ProductClass product) async {
 
     //registrando o pedido no bd dos pedidos
     DocumentReference refOrder = await Firestore.instance.collection("produtos")
@@ -79,6 +47,7 @@ class ProductClass {
       'preco': product.preco,
       'custo': product.custo,
 
+
     }).then((value) {
 
       final CollectionReference collectionReference = Firestore.instance.collection("produtos");
@@ -87,13 +56,14 @@ class ProductClass {
           .whenComplete(() async {
 
             product.pId = value.documentID;
-            changeState();
 
       }).catchError((e) => (){
-        changeState();
+
       });
     }
     );
+
+    return false;
 
   }
 }
