@@ -55,6 +55,7 @@ class _ClientesPageState extends State<ClientesPage> {
                                 onTap: (){
                                   setState(() {
                                     cliente = new ClienteClass(
+                                        documents[index].documentID,
                                         documents[index].data["nome"],
                                         documents[index].data["dataUltimaVenda"],
                                         documents[index].data["ultimoItem"],
@@ -125,8 +126,8 @@ class _ClientesPageState extends State<ClientesPage> {
             WidgetsConstructor().makeSimpleText("Valor devido: R\$ ${cliente.valorDevido.toStringAsFixed(2)}", Colors.grey[700], 17.0),
             SizedBox(height: 20.0,),
             Divider(),
-            WidgetsConstructor().makeSimpleText("Última venda: ${cliente.dataUltimaVenda}", Colors.grey[700], 17.0),
-            WidgetsConstructor().makeSimpleText("Último item: ${cliente.ultimoItem}", Colors.grey[700], 17.0),
+            WidgetsConstructor().makeSimpleText("Última venda: ${cliente.dataUltimaVenda == "nao" ? "Não houve" : cliente.dataUltimaVenda}", Colors.grey[700], 17.0),
+            WidgetsConstructor().makeSimpleText("Último item: ${cliente.ultimoItem == "nao" ? "Não houve" : cliente.ultimoItem}", Colors.grey[700], 17.0),
             Divider(),
             WidgetsConstructor().makeSimpleText("Vendas totais: R\$ ${cliente.vendasTotais.toStringAsFixed(2)}", Colors.blueGrey, 17.0),
           ],

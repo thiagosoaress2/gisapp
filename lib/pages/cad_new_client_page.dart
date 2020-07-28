@@ -52,7 +52,7 @@ class _CadNewClientState extends State<CadNewClientPage> {
                   } else {
 
 
-                    ClienteClass cliente = ClienteClass(_nameController.text, "nao", "nao", 0.0, 0.0);
+                    ClienteClass cliente = ClienteClass(null, _nameController.text, "nao", "nao", 0.0, 0.0);
                     print(cliente.nome);
 
                     setState(() {

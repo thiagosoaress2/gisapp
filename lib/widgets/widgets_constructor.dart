@@ -16,8 +16,7 @@ class WidgetsConstructor {
     );
 
   }
-
-  //este é para Form
+  //versão form
   Widget makeFormEditText(TextEditingController controller, String labelTxt, String errorMsg){
 
     return TextFormField(
@@ -30,6 +29,23 @@ class WidgetsConstructor {
       },
       controller: controller,
       decoration: InputDecoration(labelText: labelTxt),
+    );
+
+  }
+
+  Widget makeFormEditTextNumberOnly(TextEditingController controller, String labelTxt, String errorMsg){
+
+    return TextFormField(
+      validator: (value) {
+        if(value.isEmpty){
+          return errorMsg;
+        } else {
+          return null;
+        }
+      },
+      controller: controller,
+      decoration: InputDecoration(labelText: labelTxt),
+        keyboardType: TextInputType.number
     );
 
   }

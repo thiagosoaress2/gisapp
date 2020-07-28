@@ -40,8 +40,8 @@ class _CadProdPageState extends State<CadProdPage> {
   final TextEditingController _dataEntregaController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
   final TextEditingController _notaFiscalController = TextEditingController();
-  final _precoController = MoneyMaskedTextController(
-      decimalSeparator: '.', thousandSeparator: ',');
+  final _precoController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final _quantidadeController = TextEditingController();
 
   String moeda;
 
@@ -134,6 +134,7 @@ class _CadProdPageState extends State<CadProdPage> {
                             "Informe a nota"),
                         WidgetsConstructor().makeFormEditTextForCurrency(
                             _precoController, "Preço", "Informe o preço"),
+                        WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeController, "Quantidade do produto", "Informe a quantidade"),
                         SizedBox(height: 35.0,),
                         Container(height: 50.0,
                           child: RaisedButton(
@@ -168,7 +169,8 @@ class _CadProdPageState extends State<CadProdPage> {
                                             moeda,
                                             _notaFiscalController.text,
                                             double.parse(_precoController.text),
-                                            double.parse(_custoController.text));
+                                            double.parse(_custoController.text),
+                                            int.parse(_quantidadeController.text));
 
 
                                         //upload da foto
@@ -187,6 +189,7 @@ class _CadProdPageState extends State<CadProdPage> {
                                             _descricaoController.text = "";
                                             _notaFiscalController.text = "";
                                             _precoController.text = "";
+                                            _quantidadeController.text = "";
 
                                             //remove o loading
                                             isUploading = false;

@@ -14,12 +14,25 @@ class ProductClass {
   String notaFiscal;
   double preco;
   double custo;
+  int quantidade;
 
 
   //construtor
   ProductClass(this.pId, this.codigo, this.dataCompra, this.dataEntrega,
       this.descricao, this.imagem, this.moedaCompra, this.notaFiscal,
-      this.preco, this.custo){
+      this.preco, this.custo, this.quantidade){
+  }
+
+  ProductClass.toSellProduct(this.pId, this.imagem, this.codigo, this.preco, this.descricao);
+
+  void completeProductToSell (ProductClass product, String _pId, String _image, String _codigo, double _preco, _descricao, _quantidade){
+
+    product.pId = _pId;
+    product.imagem = _image;
+    product.codigo = _codigo;
+    product.preco = _preco;
+    product.descricao = _descricao;
+    product.quantidade = _quantidade;
   }
 
 
@@ -29,6 +42,10 @@ class ProductClass {
   }
 
   ProductClass.empty();
+
+  ProductClass.eraseProduct(ProductClass product){
+
+  }
 
   Future<bool> addToBd(ProductClass product) async {
 
@@ -46,7 +63,7 @@ class ProductClass {
       'notaFiscal': product.notaFiscal,
       'preco': product.preco,
       'custo': product.custo,
-
+      'quantidade' : product.quantidade,
 
     }).then((value) {
 
@@ -66,4 +83,29 @@ class ProductClass {
     return false;
 
   }
+
+  ProductClass.fromMap(Map<String, dynamic> map) :
+        pId = map['productId']; //,
+        //quantity = map['quantity'];
+
+  ProductClass.toBeMap(ProductClass);
+
+  Map toMap(){
+    return {
+      'productId': pId,
+      //'quantity': quantity,
+    };
+  }
+
+
+
+  static List<Map> ConvertObjectsToMap({List<ProductClass> listOfObjectsOriginal}){
+    List<Map> mapProvi = [];
+    listOfObjectsOriginal.forEach((ProductClass produtox) {
+      Map produtoMap = produtox.toMap();
+      mapProvi.add(produtoMap);
+    });
+    return mapProvi;
+  }
+
 }

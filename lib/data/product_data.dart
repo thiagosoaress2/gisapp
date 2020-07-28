@@ -29,14 +29,6 @@ class ProductData {
     custo = document.data["custo"];
   }
 
-  Map<String, dynamic> toMap() {
-    return{
-      "productId" : pId,
-      "codigo" : codigo
-    };
-
-  }
-
   void addToBd(ProductClass product) async {
 
     Firestore.instance.collection("produtos").add(

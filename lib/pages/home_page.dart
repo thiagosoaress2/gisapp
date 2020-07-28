@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gisapp/pages/cad_prod_page.dart';
 import 'package:gisapp/pages/clientes_page.dart';
 import 'package:gisapp/pages/index_page.dart';
+import 'package:gisapp/pages/new_sell_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -56,7 +57,7 @@ class _HomePageState extends State<HomePage> {
               onTap: (){ //click
                 Navigator.of(context).pop();
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => CadProdPage()));
+                    builder: (context) => NewSellPage()));
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
@@ -70,7 +71,7 @@ class _HomePageState extends State<HomePage> {
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.format_list_numbered, "Situação das vendedoras", Theme.of(context).primaryColor, context),
+                child: _drawLine(Icons.description, "Situação das vendedoras", Theme.of(context).primaryColor, context),
               ),
             ),InkWell( //item 5 Gerar arquivo
               onTap: (){ //click
@@ -92,6 +93,17 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
                 child: _drawLine(Icons.person, "Clientes", Theme.of(context).primaryColor, context),
+              ),
+            ),
+            InkWell( //Estoque
+              onTap: (){ //click
+                Navigator.of(context).pop();
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => ClientesPage()));
+              },
+              child: Container(
+                margin: EdgeInsets.only(left: 20.0),
+                child: _drawLine(Icons.format_list_numbered, "Estoque", Theme.of(context).primaryColor, context),
               ),
             ),
           ],

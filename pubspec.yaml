@@ -38,6 +38,7 @@ dependencies:
   flutter_masked_text: ^0.7.0
   mask_text_input_formatter: ^1.0.7
   group_radio_button: ^1.0.1
+  date_format: ^1.0.8
 
 
 dev_dependencies:
