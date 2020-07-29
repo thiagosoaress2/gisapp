@@ -42,8 +42,9 @@ class ProductClass {
   ProductClass.empty();
 
   ProductClass.eraseProduct(ProductClass product){
-
   }
+
+  ProductClass.productToEstoque(ProductClass product, this.pId, this.preco, this.codigo, this.descricao, this.quantidade, this.imagem, this.dataEntrega);
 
   Future<bool> addToBd(ProductClass product) async {
 

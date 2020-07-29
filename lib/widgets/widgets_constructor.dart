@@ -50,6 +50,8 @@ class WidgetsConstructor {
 
   }
 
+  /* obs nao usar este. Existe uma classe especifica pra isso. Ver nos documentos */
+  /*
   Widget makeEditTextForCurrency(MoneyMaskedTextController controller, String labelTxt){
 
     //instrução
@@ -64,6 +66,7 @@ class WidgetsConstructor {
     );
 
   }
+   */
 
   Widget makeFormEditTextForCurrency(MoneyMaskedTextController controller, String labelTxt, String errorMsg){
 

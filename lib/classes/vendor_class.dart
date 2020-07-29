@@ -6,10 +6,11 @@ class VendorClass {
   String nome;
   double comissao;
   double salario;
+  int modalidade;
 
-  VendorClass(this.id, this.nome, this.comissao, this.salario);
+  VendorClass(this.id, this.nome, this.comissao, this.salario, this.modalidade);
 
-  VendorClass.cad(this.nome, this.comissao, this.salario);
+  VendorClass.cad(this.nome, this.comissao, this.salario, this.modalidade);
 
   VendorClass.empty();
 
@@ -17,6 +18,7 @@ class VendorClass {
     vendor.id = null;
     vendor.nome = null;
     vendor.comissao = null;
+    vendor.modalidade = null;
   }
 
   Future<bool> addToBd(VendorClass vendor) async {
@@ -29,11 +31,24 @@ class VendorClass {
       "nome" : vendor.nome,
       "comissao" : vendor.comissao,
       "salario" : vendor.salario,
+      "modalidade" : vendor.modalidade,
 
     });
 
     return false;
 
+  }
+
+  Future<bool> updateClienteInfo(VendorClass vendor) async {
+
+    Firestore.instance
+        .collection('vendedores')
+        .document(vendor.id)
+        .updateData({
+      "comissao" : vendor.comissao,
+      'salario' : vendor.salario,
+      "modalidade" : vendor.modalidade,
+    });
   }
 
 }

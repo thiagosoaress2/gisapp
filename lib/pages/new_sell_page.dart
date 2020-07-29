@@ -31,13 +31,15 @@ class _NewSellState extends State<NewSellPage> {
 
   bool _isRegisteredClient = false;
 
-  ProductClass _produto = ProductClass.toSellProduct("nao", "nao", "nao", 0.0, "nao");
+  //ProductClass _produto = ProductClass.toSellProduct("nao", "nao", "nao", 0.0, "nao");
 
-  VendorClass _vendedora = VendorClass(null, null, null, null);
+  VendorClass _vendedora = VendorClass(null, null, null, null, null);
 
   ClienteClass _cliente = ClienteClass.ClienteSell(null, null, null);
 
   List<ProductClass> _produtosCarrinho = [];
+
+  double _valorEntradaVariable = 0.0;
 
   var _maskFormatterDataVenda = new MaskTextInputFormatter(mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
   final TextEditingController _dataVendaController = TextEditingController();
@@ -64,6 +66,11 @@ class _NewSellState extends State<NewSellPage> {
       });
     });
 
+    _valorEntrada.addListener(() {
+      setState(() {
+        _valorEntradaVariable = double.parse(_valorEntrada.text);
+      });
+    });
   }
 
   @override
@@ -302,7 +309,6 @@ class _NewSellState extends State<NewSellPage> {
           ],
         )
     );
-
 
 
   }
@@ -646,31 +652,44 @@ class _NewSellState extends State<NewSellPage> {
                       //registrar venda
                       if (_formKey.currentState.validate()) { //
                         if(_produtosCarrinho.length!=0){
-                          if(_vendedora.nome != null){
-
-                            //se chegou até aqui pode salvar a venda
-                            setState(() {
-                              _isUploading = true;
-                            });
-
-                            //vamos preencher o objeto venda
-                            SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), _vendedora.nome, _vendedora.id, _produtosCarrinho, double.parse(_valorEntrada.text), totalVenda);
-                            //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), formaPgto, _nomeCliente.text, isRegisteredClient ? cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), vendedora.nome, vendedora.id, produtosIdCarrinho);
-
-                            SellClass.empty().addToBd(venda);
-
-                            setState(() {
-                              _isUploading = false;
-                            });
-
-                            _displaySnackBar(context, "As informações foram salvas.");
-
-                            //agora vamos zerar tudo
-                            _resetState();
-
+                          print(_totalVenda.text);
+                          if(_totalVenda.text.isEmpty){
+                            _displaySnackBar(context, "Informe o valor da venda");
                           } else {
-                            _displaySnackBar(context, "Escolha a vendedora");
+                            if(double.parse(_totalVenda.text)<0.5 || _totalVenda.text=="0.0"){
+                              _displaySnackBar(context, "Informe o valor da venda");
+                            } else {
+                              if(_vendedora.nome != null){
+
+                                double _totalVendaTextInVariable = double.parse(_totalVenda.text);
+
+
+                                //se chegou até aqui pode salvar a venda
+                                setState(() {
+                                  _isUploading = true;
+                                });
+
+                                //vamos preencher o objeto venda
+                                SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, totalVenda);
+                                //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), formaPgto, _nomeCliente.text, isRegisteredClient ? cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), vendedora.nome, vendedora.id, produtosIdCarrinho);
+
+                                SellClass.empty().addToBd(venda);
+
+                                setState(() {
+                                  _isUploading = false;
+                                });
+
+                                _displaySnackBar(context, "As informações foram salvas.");
+
+                                //agora vamos zerar tudo
+                                _resetState();
+
+                              } else {
+                                _displaySnackBar(context, "Escolha a vendedora");
+                              }
+                            }
                           }
+
                         } else {
                           _displaySnackBar(context, "Nenhum produto selecionado");
                         }
