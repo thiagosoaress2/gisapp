@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_mobx/flutter_mobx.dart' as mob;
+import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/Utils/firebase_utils.dart';
 import 'package:gisapp/Utils/permissions_service.dart';
 import 'package:gisapp/Utils/photo_service.dart';
@@ -32,8 +33,6 @@ class _CadProdPageState extends State<CadProdPage> {
   bool isUploading = false;
 
   final TextEditingController _codigoPecaController = TextEditingController();
-  final _custoController = MoneyMaskedTextController(
-      decimalSeparator: '.', thousandSeparator: ',');
   var maskFormatterDataCompra = new MaskTextInputFormatter(
       mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
   final TextEditingController _dataCompraController = TextEditingController();
@@ -42,7 +41,8 @@ class _CadProdPageState extends State<CadProdPage> {
   final TextEditingController _dataEntregaController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
   final TextEditingController _notaFiscalController = TextEditingController();
-  final _precoController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final TextEditingController _precoController = TextEditingController();
+  final TextEditingController _custoController = TextEditingController();
   final _quantidadeController = TextEditingController();
 
   String moeda;
@@ -114,8 +114,7 @@ class _CadProdPageState extends State<CadProdPage> {
                         WidgetsConstructor().makeFormEditText(
                             _codigoPecaController, "Código da peça",
                             "Informe o código"),
-                        WidgetsConstructor().makeFormEditTextForCurrency(
-                            _custoController, "Custo", "Informe custo"),
+                        CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_custoController, "Custo"),
                         WidgetsConstructor().makeText("informe moeda da compra", Theme.of(context).primaryColor, 18.0, 16.0, 0.0, "center"),
                         SizedBox(height: 16.0,),
                         buildRadioOptions(context),
@@ -125,17 +124,14 @@ class _CadProdPageState extends State<CadProdPage> {
                         WidgetsConstructor().makeFormEditTextForDateFormat(
                             _dataEntregaController, "Data da Entrega",
                             maskFormatterDataEntrega, "Informe a data"),
-                       Center(
-                         child: isUploading ? CircularProgressIndicator() : Text(""),
-                       ),
                         WidgetsConstructor().makeFormEditText(
                             _descricaoController, "Descrição",
                             "Informe descrição"),
+                        Center(child: isUploading ? CircularProgressIndicator() : Text(""),),
                         WidgetsConstructor().makeFormEditText(
                             _notaFiscalController, "Nota fiscal",
                             "Informe a nota"),
-                        WidgetsConstructor().makeFormEditTextForCurrency(
-                            _precoController, "Preço", "Informe o preço"),
+                        CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_precoController, "Preço"),
                         WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeController, "Quantidade do produto", "Informe a quantidade"),
                         SizedBox(height: 35.0,),
                         Container(height: 50.0,

@@ -8,6 +8,7 @@ class CurrencyEditTextBuilder {
 
   Widget makeMoneyTextFormFieldSettings (TextEditingController controller, String labelTxt){
     return MoneyTextFormField(
+
         settings: MoneyTextFormFieldSettings(
             controller: controller,
             moneyFormatSettings: MoneyFormatSettings(currencySymbol: "R\$"),

@@ -1,10 +1,8 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/classes/cliente_class.dart';
 import 'package:gisapp/classes/product_class.dart';
 import 'package:gisapp/classes/sell_class.dart';
@@ -13,11 +11,8 @@ import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-
-//TO DO
-//Reduzir tamanho da imagem no upload
-//remover itens depois de ter sido adicionado
-//Procurar pelos itens quando estiver adicionando
+//To do
+//quando adiciona um item ele repete o emsmo em todos os itens
 
 class NewSellPage extends StatefulWidget {
   @override
@@ -48,12 +43,15 @@ class _NewSellState extends State<NewSellPage> {
   final TextEditingController _dataVendaController = TextEditingController();
 
   final TextEditingController _quantidadeParcelamentos = TextEditingController();
-  final _valorEntrada = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final TextEditingController _valorEntrada = TextEditingController();
+  //final _valorEntrada = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
   final TextEditingController _nomeCliente = TextEditingController();
-  final _totalVenda = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  //final _totalVenda = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final TextEditingController _totalVenda = TextEditingController();
 
   final TextEditingController _searchController = TextEditingController();
   String filter;
+
 
 
   @override
@@ -65,6 +63,7 @@ class _NewSellState extends State<NewSellPage> {
         filter = _searchController.text;
       });
     });
+
   }
 
   @override
@@ -79,7 +78,6 @@ class _NewSellState extends State<NewSellPage> {
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
-
 
 
   @override
@@ -119,9 +117,8 @@ class _NewSellState extends State<NewSellPage> {
                   Container(
                     color: Colors.transparent,
                     padding: EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 8.0),
-                      child: _produtosCarrinho.length==0
-                          ? Text("Nenhum produto selecionado.", textAlign: TextAlign.center,)
-                          : CadVendaScreen()
+                      child: _produtosCarrinho.length == 0 ? Container() :
+                      CadVendaScreen()
 
                   ),
                 ],
@@ -203,13 +200,15 @@ class _NewSellState extends State<NewSellPage> {
                               onTap: (){
                                 setState(() {
 
-                                  ProductClass.empty().completeProductToSell(_produto, documents[index].documentID, documents[index].data["imagem"], documents[index].data["codigo"], documents[index].data["preco"], documents[index].data["descricao"], documents[index].data["quantidade"]);
-                                  _produtosCarrinho.add(_produto);
-                                  _totalVenda.text = (double.parse(_totalVenda.text)+_produto.preco).toStringAsFixed(2);
-                                  totalVenda = totalVenda+_produto.preco;
-                                  print(totalVenda);
+                                  ProductClass produtoHere = ProductClass.empty();
+                                  ProductClass.empty().completeProductToSell(produtoHere, documents[index].documentID, documents[index].data["imagem"], documents[index].data["codigo"], documents[index].data["preco"], documents[index].data["descricao"], documents[index].data["quantidade"]);
+                                  _produtosCarrinho.add(produtoHere);
+                                  print(documents[index].data["preco"]);
+                                  totalVenda = documents[index].data["preco"]+totalVenda;
                                   _showProducts=false;
+                                  placeValueInTotalInRightTime();
                                 });
+
 
                               },
                               child:  Card(
@@ -250,13 +249,15 @@ class _NewSellState extends State<NewSellPage> {
                               onTap: (){
                                 setState(() {
 
-                                  ProductClass.empty().completeProductToSell(_produto, documents[index].documentID, documents[index].data["imagem"], documents[index].data["codigo"], documents[index].data["preco"], documents[index].data["descricao"], documents[index].data["quantidade"]);
-                                  _produtosCarrinho.add(_produto);
-                                  _totalVenda.text = (double.parse(_totalVenda.text)+_produto.preco).toStringAsFixed(2);
-                                  totalVenda = totalVenda+_produto.preco;
-                                  print(totalVenda);
+                                  ProductClass produtoHere = ProductClass.empty();
+                                  ProductClass.empty().completeProductToSell(produtoHere, documents[index].documentID, documents[index].data["imagem"], documents[index].data["codigo"], documents[index].data["preco"], documents[index].data["descricao"], documents[index].data["quantidade"]);
+                                  _produtosCarrinho.add(produtoHere);
+                                  print(documents[index].data["preco"]);
+                                  totalVenda = documents[index].data["preco"]+totalVenda;
                                   _showProducts=false;
+                                  placeValueInTotalInRightTime();
                                 });
+
 
                               },
                               child:  Card(
@@ -291,9 +292,7 @@ class _NewSellState extends State<NewSellPage> {
 
                               ),
                             ) :  //exibe o mesmo conteudo anterior (igual, sem tirar nada) mas filtrado
-                                Container(  //senao exibe esse aqui
-                                  child: WidgetsConstructor().makeText("Nenhum resultado", Colors.redAccent, 18.0, 16.0, 8.0, "center"),
-                                );
+                                Container(); //se nao tiver resultado exibe nada
 
                           });
                   }
@@ -410,7 +409,7 @@ class _NewSellState extends State<NewSellPage> {
                             ),
                           ) :
                           Container(  //senao exibe esse aqui
-                            child: WidgetsConstructor().makeText("Nenhum resultado", Colors.redAccent, 18.0, 16.0, 8.0, "center"),
+                            child: Container(),
                           );
                         });
                 }
@@ -507,36 +506,44 @@ class _NewSellState extends State<NewSellPage> {
               children: <Widget>[
                 WidgetsConstructor().makeSimpleText("Itens desta venda", Theme.of(context).primaryColor, 15.0),
                 SizedBox(height: 16.0,),
-                ListView.builder(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.all(4),
-                    itemCount: _produtosCarrinho.length,
-                    itemBuilder: (BuildContext context, int index) {
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 0.0, 40.0, 8.0),
+                  child: ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.all(4),
+                      itemCount: _produtosCarrinho.length,
+                      itemBuilder: (BuildContext context, int index) {
 
-                      final _key = UniqueKey().toString(); //gerando uma chave única
+                        final _key = ValueKey(DateTime.now().millisecondsSinceEpoch.toString()).toString(); //gerando uma chave única
 
-                      return Dismissible(
-                        key: Key(_key),  //passando a key
+                        return Dismissible(
+                          key: Key(_key),  //passando a key
 
-                        onDismissed: (direction) {
+                          onDismissed: (direction) {
 
-                          _produtosCarrinho.removeAt(index);
-                          totalVenda = totalVenda-_produtosCarrinho[index].preco;
-                          _totalVenda.text = totalVenda.toStringAsFixed(2);
-                          _displaySnackBar(context, "Produto removido da venda");
-                        },
-                        background: Container(color: Colors.blueGrey),
-                        child: Card(
-                            child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: ListTile(
-                                  title: Text(_produtosCarrinho[index].codigo+" - R\$ "+_produtosCarrinho[index].preco.toStringAsFixed(2)),
-                                )
-                            )
-                        ),
-                      );
-                    }
+                            totalVenda = totalVenda-_produtosCarrinho[index].preco;
+                            _produtosCarrinho.removeAt(index);
+                            placeValueInTotalInRightTime(); //ajusta o valor no edittex com o total
+                            _displaySnackBar(context, "Produto removido da venda");
+
+                            print(_produtosCarrinho);
+                          },
+                          background: Container(color: Colors.blueGrey),
+                          child: Card(
+                              child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: ListTile(
+                                    title: Text(_produtosCarrinho[index].codigo+" - R\$ "+_produtosCarrinho[index].preco.toStringAsFixed(2)),
+                                  )
+                              )
+                          ),
+                        );
+                      }
+                  ),
                 ),
+
+                SizedBox(height: 16.0,),
+                CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_totalVenda, "Total da venda"),
                 WidgetsConstructor().makeFormEditTextForDateFormat(_dataVendaController, "Data da venda", _maskFormatterDataVenda, "Informe a data"),
                 SizedBox(height: 16.0,),
                 Row(
@@ -580,7 +587,7 @@ class _NewSellState extends State<NewSellPage> {
                 SizedBox(height: 16.0,),
                 Container(
                   decoration: BoxDecoration(border: Border.all(color: Theme.of(context).primaryColor), borderRadius: BorderRadius.circular(10.0)),
-                  height: 350.0,
+                  height: 400.0,
                   child: Column(
                     children: <Widget>[
                       WidgetsConstructor().makeText("Forma de pagamento", Theme.of(context).primaryColor, 18.0, 4.0, 4.0, "center"),
@@ -590,7 +597,7 @@ class _NewSellState extends State<NewSellPage> {
                           child: Column(
                             children: <Widget>[
                               _formaPgto!="avista" ? WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeParcelamentos, "Nº parcelas", "Informe a quantidade de parcelas"): Text(""),
-                              _formaPgto!="avista" ? WidgetsConstructor().makeFormEditTextNumberOnly(_valorEntrada, "Entrada", "Informe o valor da entrada"): Text(""),
+                              _formaPgto!="avista" ? CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_valorEntrada, "Entrada"): Text(""),
                             ],
                           )
                       )
@@ -600,8 +607,6 @@ class _NewSellState extends State<NewSellPage> {
                 Center(
                   child: _isUploading ? CircularProgressIndicator() : Text(""),
                 ),
-                SizedBox(height: 16.0,),
-                WidgetsConstructor().makeEditTextForCurrency(_totalVenda, "Total da venda"),
                 SizedBox(height: 16.0,),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -686,196 +691,6 @@ class _NewSellState extends State<NewSellPage> {
     );
   }
 
-  /*
-  Widget CadVendaScreen(){
-    return Container(
-      height: 500.0,
-      child: Form(
-        key: _formKey,
-        child:  Padding(
-          padding: EdgeInsets.all(16.0),
-          child: ListView(
-            children: <Widget>[
-              WidgetsConstructor().makeSimpleText("Itens desta venda", Theme.of(context).primaryColor, 15.0),
-              SizedBox(height: 16.0,),
-              ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(4),
-                  itemCount: _produtosCarrinho.length,
-                  itemBuilder: (BuildContext context, int index) {
-
-                    final _key = UniqueKey().toString(); //gerando uma chave única
-
-                    return Dismissible(
-                      key: Key(_key),  //passando a key
-
-                      onDismissed: (direction) {
-
-                          _produtosCarrinho.removeAt(index);
-                          totalVenda = totalVenda-_produtosCarrinho[index].preco;
-                        _displaySnackBar(context, "Produto removido da venda");
-                      },
-                      background: Container(color: Colors.blueGrey),
-                      child: Card(
-                          child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: ListTile(
-                                title: Text(_produtosCarrinho[index].codigo+" - Preço etiqueta: "+_produtosCarrinho[index].preco.toStringAsFixed(2)),
-                              )
-                          )
-                      ),
-                    );
-                  }
-              ),
-              WidgetsConstructor().makeFormEditTextForDateFormat(_dataVendaController, "Data da venda", _maskFormatterDataVenda, "Informe a data"),
-              SizedBox(height: 16.0,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    width: 240.0,
-                    child: TextFormField(
-                      controller: _nomeCliente,
-                      decoration: InputDecoration(labelText: "Nome do cliente"),
-                      validator: (value) {
-                        if(value.isEmpty){
-                          return "Informe o nome do cliente";
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 5.0,),
-                  Container(
-                    width: 50.0,
-                    height: 50.0,
-                    color: Colors.blueAccent,
-                    child: IconButton(
-                      icon: Icon(Icons.person, color: Colors.white,),
-                      color: Theme.of(context).primaryColor,
-                      onPressed: (){
-                        //exibe a tela com os clientes para escolher
-                        setState(() {
-                          _showClients = true;
-                        });
-
-                      },
-                    ),
-                  ),
-
-                ],
-              ),
-
-              SizedBox(height: 16.0,),
-              Container(
-                decoration: BoxDecoration(border: Border.all(color: Theme.of(context).primaryColor), borderRadius: BorderRadius.circular(10.0)),
-                height: 350.0,
-                child: Column(
-                  children: <Widget>[
-                    WidgetsConstructor().makeText("Forma de pagamento", Theme.of(context).primaryColor, 18.0, 4.0, 4.0, "center"),
-                    buildRadioOptions(context),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
-                      child: Column(
-                        children: <Widget>[
-                          _formaPgto!="avista" ? WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeParcelamentos, "Nº parcelas", "Informe a quantidade de parcelas"): Text(""),
-                          _formaPgto!="avista" ? WidgetsConstructor().makeFormEditTextNumberOnly(_valorEntrada, "Entrada", "Informe o valor da entrada"): Text(""),
-                        ],
-                      )
-                    )
-                  ],
-                ),
-              ),
-              Center(
-                child: _isUploading ? CircularProgressIndicator() : Text(""),
-              ),
-              SizedBox(height: 16.0,),
-              WidgetsConstructor().makeEditTextForCurrency(_totalVenda, "Total da venda"),
-              SizedBox(height: 16.0,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                      width: 240.0,
-                      child: Text(_vendedora.nome == null ? "Nenhuma vendedora" : _vendedora.nome)
-                  ),
-                  SizedBox(width: 5.0,),
-                  Container(
-                    width: 50.0,
-                    height: 50.0,
-                    color: Colors.blueAccent,
-                    child: IconButton(
-                      icon: Icon(Icons.person, color: Colors.white,),
-                      color: Theme.of(context).secondaryHeaderColor,
-                      onPressed: (){
-                        //exibe a tela com os clientes para escolher
-                        setState(() {
-                          _showVendors = true;
-                        });
-
-                      },
-                    ),
-                  ),
-
-                ],
-              ),
-              SizedBox(height: 30.0,),
-              Container(
-                height: 60.0,
-                color: Theme.of(context).primaryColor,
-                child: RaisedButton(
-                  color: Theme.of(context).primaryColor,
-                  child: WidgetsConstructor().makeSimpleText("Registrar venda", Colors.white, 20.0),
-                  onPressed: () async {
-                    //registrar venda
-                    if (_formKey.currentState.validate()) { //
-                      if(_produtosCarrinho.length!=0){
-                        if(_vendedora.nome != null){
-
-                          //se chegou até aqui pode salvar a venda
-                          setState(() {
-                            _isUploading = true;
-                          });
-
-                          //vamos preencher o objeto venda
-                          SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), _vendedora.nome, _vendedora.id, _produtosCarrinho, double.parse(_valorEntrada.text), totalVenda);
-                          //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), formaPgto, _nomeCliente.text, isRegisteredClient ? cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), vendedora.nome, vendedora.id, produtosIdCarrinho);
-
-                          SellClass.empty().addToBd(venda);
-
-                          setState(() {
-                            _isUploading = false;
-                          });
-
-                          _displaySnackBar(context, "As informações foram salvas.");
-
-                          //agora vamos zerar tudo
-                          _resetState();
-
-                        } else {
-                          _displaySnackBar(context, "Escolha a vendedora");
-                        }
-                      } else {
-                        _displaySnackBar(context, "Nenhum produto selecionado");
-                      }
-                    } else {
-                      _displaySnackBar(context, "Preencha todas informações");
-                    }
-                  },
-                ),
-              ),
-              SizedBox(height: 16.0,)
-
-
-
-            ],
-          ),
-        ),
-      )
-    );
-  }
-   */
   void _resetState(){
 
     setState(() {
@@ -892,6 +707,16 @@ class _NewSellState extends State<NewSellPage> {
       _searchController.text="";
 
     });
+  }
+
+  void placeValueInTotalInRightTime(){
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _totalVenda.text = totalVenda.toStringAsFixed(2);
+      });
+    });
+
   }
 
   Widget buildRadioOptions(BuildContext context) {
