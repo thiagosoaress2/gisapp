@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gisapp/classes/cliente_class.dart';
-import 'package:gisapp/pages/clientes_page.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 
 class CadNewClientPage extends StatefulWidget {

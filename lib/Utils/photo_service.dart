@@ -27,7 +27,11 @@ class PhotoService {
   }
 
   Future getImage() async {  //upload da foto
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    //final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.getImage(
+        source: ImageSource.gallery,
+        imageQuality: 25,
+    );
 
     image = File(pickedFile.path);
     if(image != null){ //se o image é diferente de null, incrementa a variavel que está sendo observada
@@ -35,5 +39,6 @@ class PhotoService {
     }
 
   }
+
 
 }

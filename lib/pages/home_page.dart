@@ -3,6 +3,7 @@ import 'package:gisapp/pages/cad_prod_page.dart';
 import 'package:gisapp/pages/clientes_page.dart';
 import 'package:gisapp/pages/index_page.dart';
 import 'package:gisapp/pages/new_sell_page.dart';
+import 'package:gisapp/pages/vendedoras_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -67,7 +68,7 @@ class _HomePageState extends State<HomePage> {
               onTap: (){ //click
                 Navigator.of(context).pop();
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => IndexPage()));
+                    builder: (context) => VendedorasPage()));
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),

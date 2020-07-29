@@ -39,6 +39,8 @@ dependencies:
   mask_text_input_formatter: ^1.0.7
   group_radio_button: ^1.0.1
   date_format: ^1.0.8
+  flutter_image_compress: ^0.7.0
+  flutter_money_formatter: ^0.8.3
 
 
 dev_dependencies:

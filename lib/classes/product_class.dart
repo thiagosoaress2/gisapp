@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gisapp/pages/cad_prod_page.dart';
-import 'package:mobx/mobx.dart';
 
 class ProductClass {
 

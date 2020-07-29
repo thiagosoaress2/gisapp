@@ -1,8 +1,6 @@
-import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gisapp/classes/product_class.dart';
-import 'package:gisapp/data/product_data.dart';
 
 class SellClass {
 
@@ -13,16 +11,17 @@ class SellClass {
   String clienteId;
   int parcelas;
   double precoEtiqueta;
-  double valor;
+  double valor; //valor da venda
   String vendedora;
   String vendedoraId;
   double entrada;
+  double totalSemDesconto;
   List<ProductClass> produtos;
   //List<String> produtos;
 
   List<String> listOfProdutosId;
 
-  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada);
+  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada, this.totalSemDesconto);
 
   SellClass.empty();
 
@@ -42,6 +41,7 @@ class SellClass {
       'vendedora' : venda.vendedora,
       'vendedoraId' : venda.vendedoraId,
       'entrada' : venda.entrada,
+      'totalSemDesconto' : venda.totalSemDesconto,
       'produtos' : ProductClass.ConvertObjectsToMap(listOfObjectsOriginal: venda.produtos),
 
     });
