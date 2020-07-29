@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/classes/vendor_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
+import 'package:moneytextformfield/moneytextformfield.dart';
 
 class VendedorasPage extends StatefulWidget {
   @override
@@ -17,7 +19,8 @@ class _VendedorasPageState extends State<VendedorasPage> {
 
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _comissaoController = TextEditingController();
-  final _salarioController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  //final _salarioController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  final TextEditingController _salarioController = TextEditingController();
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -26,16 +29,6 @@ class _VendedorasPageState extends State<VendedorasPage> {
   bool _isUploading = false;
 
 
-  @override
-  void initState() {
-
-  }
-
-
-  @override
-  void dispose() {
-
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +44,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
           onPressed: (){
             setState(() {
               page = "add";
+              _salarioController.text="";
             });
           },
         ),
@@ -170,7 +164,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
                   children: <Widget>[
                     WidgetsConstructor().makeFormEditText(_nomeController, "Nome", "Informe o nome"),
                     SizedBox(height: 16.0,),
-                    WidgetsConstructor().makeFormEditTextForCurrency(_salarioController, "Salário", "Informe o salário"),
+                    CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_salarioController, "Salário"),
                     SizedBox(height: 16.0,),
                     _isUploading ? Center(child: CircularProgressIndicator(),) : Container(),
                     WidgetsConstructor().makeFormEditTextNumberOnly(_comissaoController, "Comissão", "Informe a comissão"),
