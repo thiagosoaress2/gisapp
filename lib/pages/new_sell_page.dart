@@ -414,9 +414,7 @@ class _NewSellState extends State<NewSellPage> {
 
                             ),
                           ) :
-                          Container(  //senao exibe esse aqui
-                            child: Container(),
-                          );
+                          Container(child: Container(),);
                         });
                 }
               },

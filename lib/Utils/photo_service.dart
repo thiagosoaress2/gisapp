@@ -17,6 +17,7 @@ class PhotoService {
 
   Action _changeState; //ação que vai disparar o listener
 
+  File get getImageFile => image;
 
   void changeState(){  //esta função vai ser chamada e vai incrementar o valor. Sempre que o valor mudar, será chamado o elemento na outra página que redesenha a tela.
     runInAction(
@@ -30,7 +31,7 @@ class PhotoService {
     //final pickedFile = await picker.getImage(source: ImageSource.gallery);
     final pickedFile = await picker.getImage(
         source: ImageSource.gallery,
-        imageQuality: 25,
+        imageQuality: 20,
     );
 
     image = File(pickedFile.path);

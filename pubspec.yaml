@@ -41,6 +41,8 @@ dependencies:
   date_format: ^1.0.8
   flutter_image_compress: ^0.7.0
   moneytextformfield: ^0.3.5+1
+  pdf: ^1.9.0
+  path_provider: ^1.6.11
 
 dev_dependencies:
   flutter_test:
@@ -83,10 +85,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+     - family: roboto
+       fonts:
+         - asset: fonts/roboto.ttf
+
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
