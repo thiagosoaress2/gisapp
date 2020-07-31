@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gisapp/Models/estoque_models.dart';
 import 'package:gisapp/Utils/photo_service.dart';
 import 'package:gisapp/classes/product_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
@@ -28,9 +29,7 @@ class _EstoquePageState extends State<EstoquePage> {
 
   File img;
 
-
   final pdf = pw.Document();
-
 
   int page = 0;
   //0 - landing page
@@ -49,7 +48,7 @@ class _EstoquePageState extends State<EstoquePage> {
   List<ProductClass> _produtosEmEstoque = [];
 
   List<DocumentSnapshot> documents;  //esta é a lista que recebe o snapshot
-  List<DocumentSnapshot> documentsCopy; //esta lista recebe uma copia. Vamos usar pra poder alterar o conteudo da lista acima e filtrar os itens.
+  //List<DocumentSnapshot> documentsCopy; //esta lista recebe uma copia. Vamos usar pra poder alterar o conteudo da lista acima e filtrar os itens.
   bool isPrinting = false;
 
   int position = 0;
@@ -170,7 +169,7 @@ class _EstoquePageState extends State<EstoquePage> {
                     default:
                       documents = snapshot.data.documents
                           .toList(); //recuperamos o querysnapshot que estamso observando
-                      documentsCopy = documents;
+                      EstoqueModels.empty().copyList(documents); //documentsCopy = documents;
 
                       return ListView
                           .builder( //aqui vamos começar a construir a listview com os itens retornados
@@ -529,11 +528,11 @@ class _EstoquePageState extends State<EstoquePage> {
           Container(
             height: 100,
             width: 100,
-            child: Image.network(documentsCopy[position]["imagem"]),
+            child: Image.network(EstoqueModels.empty().documents[position]["imagem"]), //.documentsCopy[position]["imagem"]),
           ),
           SizedBox(height: 16.0,),
           Container(
-            child: Text(documentsCopy[position]["codigo"], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.grey[500]),),
+            child: Text(EstoqueModels.empty().documents[position]["codigo"], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.grey[500]),),
           ),
 
         ],
@@ -546,8 +545,8 @@ class _EstoquePageState extends State<EstoquePage> {
     List<int> listOfRemovables=[];
 
 
-    documentsCopy = documents;
-    if(documentsCopy.length==0){
+    EstoqueModels.empty().copyList(documents);// = documents;
+    if(EstoqueModels.empty().documents.length==0){
       _displaySnackBar(context, "Não existem itens para a lista.");
     } else {
 
@@ -557,7 +556,8 @@ class _EstoquePageState extends State<EstoquePage> {
 
       } else if(filterOptions == "nao" && query != null ||query != ""){
         //imprimir apenas os elementos que possuam itens da query
-        documentsCopy = documents;
+        EstoqueModels.empty().copyList(documents);
+        //documentsCopy = documents;
         /*
       int cont=0;
       while(cont<documents.length){
@@ -568,7 +568,7 @@ class _EstoquePageState extends State<EstoquePage> {
       }
 
        */
-        documentsCopy.removeWhere((element) => !element.data['codigo'].toString().contains(query));
+        EstoqueModels.empty().documents.removeWhere((element) => !element.data['codigo'].toString().contains(query));
 
         /*
       documents.forEach((element) {
@@ -580,21 +580,21 @@ class _EstoquePageState extends State<EstoquePage> {
 
        */
       } else if(filterOptions == "falta" && query == null || query == ""){
-        documentsCopy = documents;
-        documentsCopy.forEach((element) {
+        EstoqueModels.empty().copyList(documents);
+        EstoqueModels.empty().documents.forEach((element) {
           if(element.data['quantidade']!=0){
-            documentsCopy.remove(element);
+            EstoqueModels.empty().documents.remove(element);
           }
         });
       } else if(filterOptions == "falta" && query != null || query != ""){
-        documentsCopy = documents;
-        documentsCopy.forEach((element) {
+        EstoqueModels.empty().copyList(documents);
+        EstoqueModels.empty().documents.forEach((element) {
           String x = element.data['codigo'];
           if(!x.contains(query)){
             //se o elemento possui o item buscado
             if(element.data['quantidade']!=0){
               //se a quantidade não é 0 (estamos buscando os 0, produtos em falta) remove da lista
-              documentsCopy.remove(element);
+              EstoqueModels.empty().documents.remove(element);
             }
           }
         });
@@ -623,8 +623,8 @@ class _EstoquePageState extends State<EstoquePage> {
     Uint8List originalUnit8List;
 
 
-    while (cont < documentsCopy.length) {
-      String imageUrl = documentsCopy[cont]["imagem"];
+    while (cont < EstoqueModels.empty().documents.length) {
+      String imageUrl = EstoqueModels.empty().documents[cont]["imagem"];
 
       http.Response response2 = await http.get(imageUrl);
       originalUnit8List = response2.bodyBytes;
@@ -657,7 +657,7 @@ class _EstoquePageState extends State<EstoquePage> {
 
 
     cont = 0;
-    while (cont < documentsCopy.length) {  //o documento vai ser impresso de 10 em 10
+    while (cont < EstoqueModels.empty().documents.length) {  //o documento vai ser impresso de 10 em 10
       pdf.addPage(
           pw.MultiPage(
               pageFormat: PdfPageFormat.a4,
@@ -704,7 +704,7 @@ class _EstoquePageState extends State<EstoquePage> {
                   pw.Divider(),
 
 
-                  documentsCopy.length >= cont+1 ?
+                  EstoqueModels.empty().documents.length >= cont+1 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -714,7 +714,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -729,25 +729,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+2 ?
+                  EstoqueModels.empty().documents.length >= cont+2 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -757,7 +757,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+1]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+1]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -772,25 +772,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+1]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+1]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+1]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+1]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+1]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+1]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+3 ?
+                  EstoqueModels.empty().documents.length >= cont+3 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -800,7 +800,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+2]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+2]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -815,25 +815,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[2]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[2]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+2]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+2]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+2]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+2]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+4 ?
+                  EstoqueModels.empty().documents.length >= cont+4 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -843,7 +843,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+3]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+3]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -858,25 +858,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+3]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+3]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+3]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+3]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+3]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+3]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+5 ?
+                  EstoqueModels.empty().documents.length >= cont+5 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -886,7 +886,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+4]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+4]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -901,25 +901,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+4]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+4]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+4]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+4]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+4]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+4]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+6 ?
+                  EstoqueModels.empty().documents.length >= cont+6 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -929,7 +929,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+5]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+5]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -944,25 +944,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+5]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+5]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+5]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+5]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+5]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+5]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+7 ?
+                  EstoqueModels.empty().documents.length >= cont+7 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -972,7 +972,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+6]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+6]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -987,25 +987,25 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+6]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+6]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+6]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+6]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+6]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+6]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
-                  documentsCopy.length >= cont+8 ?
+                  EstoqueModels.empty().documents.length >= cont+8 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -1015,7 +1015,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+7]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+7]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -1030,26 +1030,26 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+7]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+7]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+7]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+7]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+7]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+7]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
 
-                  documentsCopy.length >= cont+9 ?
+                  EstoqueModels.empty().documents.length >= cont+9 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -1059,7 +1059,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+8]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+8]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -1074,26 +1074,26 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+8]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+8]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+8]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+8]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+8]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+8]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
 
 
-                  documentsCopy.length >= cont+10 ?
+                  EstoqueModels.empty().documents.length >= cont+10 ?
                   pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       mainAxisAlignment: pw.MainAxisAlignment.start,
@@ -1103,7 +1103,7 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+9]["dataEntrega"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+9]["dataEntrega"])
                         ),
                         pw.Container(
                           padding: pw.EdgeInsets.all(8.0),
@@ -1118,20 +1118,20 @@ class _EstoquePageState extends State<EstoquePage> {
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
-                            child: pw.Text(documentsCopy[cont+9]["codigo"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+9]["codigo"])
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 70.0,
                             child: pw.Text(
-                                documentsCopy[cont+9]["preco"].toStringAsFixed(2))
+                                EstoqueModels.empty().documents[cont+9]["preco"].toStringAsFixed(2))
                         ),
                         pw.Container(
                             padding: pw.EdgeInsets.all(8.0),
                             height: 70.0,
                             width: 180.0,
-                            child: pw.Text(documentsCopy[cont+9]["descricao"])
+                            child: pw.Text(EstoqueModels.empty().documents[cont+9]["descricao"])
                         ),
                       ]
                   ) : pw.Container(),
