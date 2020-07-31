@@ -21,6 +21,7 @@ class EstoquePage extends StatefulWidget {
 
 class _EstoquePageState extends State<EstoquePage> {
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
 
   //itens da foto
   PhotoService photoService = PhotoService();
@@ -32,6 +33,7 @@ class _EstoquePageState extends State<EstoquePage> {
 
 
   int page = 0;
+  //0 - landing page
 
   bool printThis = false;
 
@@ -46,8 +48,11 @@ class _EstoquePageState extends State<EstoquePage> {
 
   List<ProductClass> _produtosEmEstoque = [];
 
-  List<DocumentSnapshot> documentsCopy;
+  List<DocumentSnapshot> documents;  //esta é a lista que recebe o snapshot
+  List<DocumentSnapshot> documentsCopy; //esta lista recebe uma copia. Vamos usar pra poder alterar o conteudo da lista acima e filtrar os itens.
   bool isPrinting = false;
+
+  int position = 0;
 
   @override
   void initState() {
@@ -69,12 +74,13 @@ class _EstoquePageState extends State<EstoquePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: WidgetsConstructor().makeSimpleText(
             "Estoque", Colors.white, 18.0),
         centerTitle: true,
       ),
-      body: page == 0 ? LandingPage() : Container(),
+      body: page == 0 ? LandingPage() : page==1 ? productDetails() : Container(),
     );
   }
 
@@ -125,9 +131,7 @@ class _EstoquePageState extends State<EstoquePage> {
                         onPressed: () async {
 
                           printThis = true;
-                          pdfNewTry2();
-
-                          //pdfNewTry();
+                          filterList();
 
                         }
                         ,)
@@ -143,7 +147,10 @@ class _EstoquePageState extends State<EstoquePage> {
                   CircularProgressIndicator(),
                   SizedBox(height: 8.0,),
                   Text("Aguarde, gerando relatório", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18.0),),
-                  SizedBox(height: 8.0,),
+                  SizedBox(height: 4.0,),
+                  Text("Pode demorar um pouco dependendo da quantidade de itens", style: TextStyle(color: Colors.grey[300], fontSize: 15.0),),
+                  SizedBox(height: 16.0,),
+
                 ],
               )
             ) : Container(),
@@ -161,7 +168,7 @@ class _EstoquePageState extends State<EstoquePage> {
                         child: CircularProgressIndicator(),
                       );
                     default:
-                      List<DocumentSnapshot> documents = snapshot.data.documents
+                      documents = snapshot.data.documents
                           .toList(); //recuperamos o querysnapshot que estamso observando
                       documentsCopy = documents;
 
@@ -175,7 +182,8 @@ class _EstoquePageState extends State<EstoquePage> {
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    print("Clicou no item");
+                                    page=1;
+                                    position = index;
                                   });
                                 },
                                 child: Card(
@@ -488,8 +496,121 @@ class _EstoquePageState extends State<EstoquePage> {
     );
   }
 
+  Widget productDetails() {
 
-  void pdfNewTry2() async {
+    return Container(
+      height: 700,
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                width: 50.0,
+                height: 50.0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.redAccent,
+                    size: 30.0,
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    setState(() {
+                      page=0;
+                    });
+                  },
+                ),
+              ), //btn fechar
+            ],
+          ),
+          Container(
+            height: 100,
+            width: 100,
+            child: Image.network(documentsCopy[position]["imagem"]),
+          ),
+          SizedBox(height: 16.0,),
+          Container(
+            child: Text(documentsCopy[position]["codigo"], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.grey[500]),),
+          ),
+
+        ],
+      )
+    );
+  }
+
+  filterList(){
+
+    List<int> listOfRemovables=[];
+
+
+    documentsCopy = documents;
+    if(documentsCopy.length==0){
+      _displaySnackBar(context, "Não existem itens para a lista.");
+    } else {
+
+      if (filterOptions == "nao" && query == null || query == "") {
+
+        //imprimir a lista completa sem fazer nada
+
+      } else if(filterOptions == "nao" && query != null ||query != ""){
+        //imprimir apenas os elementos que possuam itens da query
+        documentsCopy = documents;
+        /*
+      int cont=0;
+      while(cont<documents.length){
+        String x = documents[cont]['codigo'];
+        if(!x.contains(query)){
+          listOfRemovables.add(cont);
+        }
+      }
+
+       */
+        documentsCopy.removeWhere((element) => !element.data['codigo'].toString().contains(query));
+
+        /*
+      documents.forEach((element) {
+        String x = element.data['codigo'];
+        if(!x.contains(query)){
+          documentsCopy.remove(element);
+        }
+      });
+
+       */
+      } else if(filterOptions == "falta" && query == null || query == ""){
+        documentsCopy = documents;
+        documentsCopy.forEach((element) {
+          if(element.data['quantidade']!=0){
+            documentsCopy.remove(element);
+          }
+        });
+      } else if(filterOptions == "falta" && query != null || query != ""){
+        documentsCopy = documents;
+        documentsCopy.forEach((element) {
+          String x = element.data['codigo'];
+          if(!x.contains(query)){
+            //se o elemento possui o item buscado
+            if(element.data['quantidade']!=0){
+              //se a quantidade não é 0 (estamos buscando os 0, produtos em falta) remove da lista
+              documentsCopy.remove(element);
+            }
+          }
+        });
+
+
+      }
+
+      createPdfFile();  //monta o pdf
+
+    }
+
+
+
+  }
+
+  void createPdfFile() async {
     setState(() {
       isPrinting = true;
     });
@@ -1024,1028 +1145,17 @@ class _EstoquePageState extends State<EstoquePage> {
 
       cont = cont + 10;
     }
-    savePdf();
+    savePdfFile();
 
     setState(() {
       isPrinting = false;
+
+      _displaySnackBar(context, "O arquivo está disponível na pasta Downloads.");
     });
 
   }
 
-  /*  este é o que esta funcionando
-  void pdfNewTry2() async {
-
-    setState(() {
-      isPrinting = true;
-    });
-
-    List<PdfImage> listOfImages = [];  //armazena as imagens convertidas para depois exibir no pdf
-    int cont=0;
-
-    Uint8List targetlUinit8List;
-    Uint8List originalUnit8List;
-
-
-    while (cont<documentsCopy.length){
-
-    String imageUrl = documentsCopy[cont]["imagem"];
-
-    http.Response response2 = await http.get(imageUrl);
-    originalUnit8List = response2.bodyBytes;
-
-    ui.Image originalUiImage = await decodeImageFromList(originalUnit8List);
-    ByteData originalByteData = await originalUiImage.toByteData();
-    print('original image ByteData size is ${originalByteData.lengthInBytes}');
-
-    var codec = await ui.instantiateImageCodec(originalUnit8List,
-        targetHeight: 150, targetWidth: 150);
-        //targetHeight: (height/ratio).toInt(), targetWidth: (width/ratio).toInt());
-    var frameInfo = await codec.getNextFrame();
-    ui.Image targetUiImage = frameInfo.image;
-
-    ByteData targetByteData =
-    await targetUiImage.toByteData(format: ui.ImageByteFormat.png);
-    print('target image ByteData size is ${targetByteData.lengthInBytes}');
-    targetlUinit8List = targetByteData.buffer.asUint8List();
-
-
-      final image = PdfImage.file(
-        pdf.document,
-        bytes: targetlUinit8List,
-      );
-
-      listOfImages.add(image);
-      cont++;
-    }
-
-
-    pdf.addPage(
-        pw.MultiPage(
-            pageFormat: PdfPageFormat.a4,
-            margin: pw.EdgeInsets.all(16.0),
-
-            build: (pw.Context context) {
-              return <pw.Widget>[
-                pw.Header(
-                    level: 0,
-                    child: pw.Text(filterOptions=="nao" ? "Relatório do estoque completo" : filterOptions=="falta" ? "Relatório dos itens em falta" : "Relatório ordenado por antiguidade")
-                ),
-                //pw.Image(image)
-                pw.Row(
-                    //crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-
-                      pw.Container(
-                        width: 70.0,
-                        child: pw.Text("Data"),
-                      ),
-                      pw.Container(
-                        width: 70.0,
-                      ),
-                      pw.Container(
-                        width: 70.0,
-                        child: pw.Text("Código"),
-                      ),
-                      pw.Container(
-                        width: 70.0,
-                        child: pw.Text("Valor"),
-                      ),
-                      pw.Container(
-                        width: 180.0,
-                        child: pw.Text("Descrição"),
-                      ),
-
-                    ]
-                ),
-                pw.Divider(),
-
-
-                documentsCopy.length>=1 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.Text(documentsCopy[0]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[0])),
-
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                          child: pw.Text(documentsCopy[0]["codigo"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                          child: pw.Text(documentsCopy[0]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 180.0,
-                          child: pw.Text(documentsCopy[0]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=2 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[1]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[1])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[1]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[1]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[1]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=3 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[2]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[2])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[2]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[2]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[2]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=4 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[3]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[3])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[3]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[3]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[3]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=5 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[4]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[4])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[4]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[4]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[4]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=6 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[5]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[5])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[5]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[5]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[5]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=7 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[6]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[6])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[6]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[6]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[6]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=8 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[7]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[7])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[7]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[7]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[7]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=9 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[8]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[8])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[8]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[8]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[8]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=10 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[9]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[9])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[9]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[9]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[9]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=11 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[10]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[10])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[10]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[10]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[10]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=12 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[11]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[11])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[11]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[11]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[11]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=13 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[12]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[12])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[12]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[12]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[12]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=14 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[13]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[13])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[13]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[13]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[13]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=15 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[14]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[14])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[14]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[14]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[14]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=16 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[15]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[15])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[15]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[15]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[15]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-                documentsCopy.length>=17 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[16]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[16])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[16]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[16]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[16]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-                documentsCopy.length>=18 ?
-                pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    mainAxisAlignment: pw.MainAxisAlignment.start,
-                    children: <pw.Widget>[
-                      pw.Divider(),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[19]["dataEntrega"])
-                      ),
-                      pw.Container(
-                        padding: pw.EdgeInsets.all(8.0),
-                        height: 70.0,
-                        width: 70.0,
-                        child: pw.AspectRatio(
-                            aspectRatio: 1/0.5,
-                            child: pw.Image(listOfImages[19])),
-
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[19]["codigo"])
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 70.0,
-                          child: pw.Text(documentsCopy[19]["preco"].toStringAsFixed(2))
-                      ),
-                      pw.Container(
-                          padding: pw.EdgeInsets.all(8.0),
-                          height: 70.0,
-                          width: 180.0,
-                          child: pw.Text(documentsCopy[19]["descricao"])
-                      ),
-                    ]
-                ) : pw.Container(),
-
-
-
-
-
-
-              ];
-            }
-        )
-    );
-
-    savePdf();
-
-    setState(() {
-      isPrinting = false;
-    });
-
-  }
-
-
-   */
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  void pdfNewTry() async {
-
-    List<String> listOfUrl = [];
-
-
-
-    int cont=0;
-    while(cont<documentsCopy.length){
-      listOfUrl.add(documentsCopy[cont]["imagem"].toString());
-      cont++;
-    }
-
-    List<Uint8List> listOfUint8 = [];
-    cont=0;
-    while (cont<documentsCopy.length){
-
-      http.Response response = await http.get(
-          listOfUrl[cont]
-      );
-      response.bodyBytes;
-      final Uint8List list = response.bodyBytes.buffer.asUint8List();
-      listOfUint8.add(list);
-      cont++;
-    }
-
-    cont=0;
-    List<PdfImage> listOfImages = [];
-
-    while(cont<documentsCopy.length){
-
-      final image = PdfImage.file(pdf.document, bytes: listOfUint8[cont]);
-      listOfImages.add(image);
-      cont++;
-    }
-
-    cont=0;
-    while (cont<documentsCopy.length){
-
-      createPage();
-
-      //para imprimri 2 por páginacttt
-      cont=cont+2;
-
-
-    }
-
-
-
-
-
-
-
-
-    /*
-    while (cont<documentsCopy.length){
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: pw.EdgeInsets.all(8.0),
-
-          build: (pw.Context context){
-            return <pw.Widget>[
-              pw.Header(
-                level: 0,
-                child: pw.Text(filterOptions=="nao" ? "Relatório do estoque completo" : filterOptions=="falta" ? "Relatório dos itens em falta" : "Relatório ordenado por antiguidade", style: pw.TextStyle(fontSize: 20.0)),
-              ),
-              pw.Row(
-                children: <pw.Widget>[
-                  pw.AspectRatio(
-                      aspectRatio: 2/1,
-                      child: pw.Image(listOfImages[cont])),
-                  pw.Text(
-                    documentsCopy[cont]["codigo"], style: pw.TextStyle(fontSize: 20.0),
-                  ),
-                ],
-              ),
-
-            ];
-          }
-        )
-      );
-
-      //para imprimri 2 por páginacttt
-      cont=cont+2;
-    }
-
-
-
-     */
-
-    /*
-    pdf.addPage(
-        pw.MultiPage(
-            pageFormat: PdfPageFormat.a4,
-            margin: pw.EdgeInsets.all(16.0),
-
-            build: (pw.Context context) {
-              return <pw.Widget>[
-                pw.Header(
-                    level: 0,
-                    child: pw.Text(filterOptions=="nao" ? "Relatório do estoque completo" : filterOptions=="falta" ? "Relatório dos itens em falta" : "Relatório ordenado por antiguidade")
-                ),
-                //pw.Image(image)
-
-
-                /*
-                pw.AspectRatio(
-                    aspectRatio: 2/1,
-                    child: pw.Image(image)),
-                 */
-
-
-              ];
-            }
-        )
-    );
-
-     */
-
-    //savePdf();
-  }
-
-
-  Future savePdf() async {
+  Future savePdfFile() async {
 
     final _fileName = "listagem_estoque_${DateTime.now().day.toString()}_${DateTime.now().month.toString()}_${DateTime.now().minute.toString()}_${DateTime.now().second.toString()}.pdf";
     File file = File("/storage/emulated/0/Download/$_fileName");
@@ -2054,221 +1164,20 @@ class _EstoquePageState extends State<EstoquePage> {
     print("Arquivo gerado");
   }
 
+  _displaySnackBar(BuildContext context, String msg) {
 
-  //backup
-  /*
-  void pdfNewTry() async {
-
-    Uint8List targetlUinit8List;
-    Uint8List originalUnit8List;
-
-    String url = "https://firebasestorage.googleapis.com/v0/b/guby-5eaac.appspot.com/o/produtos%2F1596030308423img?alt=media&token=b7f6d6e9-3b1d-42b7-9bc7-cc030b973157";
-
-    String imageUrl = url;
-
-    /*
-    http.Response response2 = await http.get(imageUrl);
-    originalUnit8List = response2.bodyBytes;
-
-    ui.Image originalUiImage = await decodeImageFromList(originalUnit8List);
-    ByteData originalByteData = await originalUiImage.toByteData();
-    print('original image ByteData size is ${originalByteData.lengthInBytes}');
-
-    print(originalUiImage.height);
-    print(originalUiImage.width);
-
-    //int height = originalUiImage.height;
-    //int width = originalUiImage.width;
-    //int ratio = 85;
-
-    //int cont = 0;
-    //while (cont<1000){
-
-    //}
-
-    var codec = await ui.instantiateImageCodec(originalUnit8List,
-        //targetHeight: 50, targetWidth: 50);
-        targetHeight: (height/ratio).toInt(), targetWidth: (width/ratio).toInt());
-    var frameInfo = await codec.getNextFrame();
-    ui.Image targetUiImage = frameInfo.image;
-
-    ByteData targetByteData =
-    await targetUiImage.toByteData(format: ui.ImageByteFormat.png);
-    print('target image ByteData size is ${targetByteData.lengthInBytes}');
-    targetlUinit8List = targetByteData.buffer.asUint8List();
-
-    PdfImage image = new PdfImage(
-        pdf.document,
-        image: targetlUinit8List,
-        width: (height/ratio).toInt(),
-        height: (width/ratio).toInt());
-
-
-     */
-
-    http.Response response = await http.get(
-        url
+    final snackBar = SnackBar(
+      content: Text(msg),
+      duration: Duration(seconds: 3),
+      action: SnackBarAction(
+        label: "Ok",
+        onPressed: (){
+          _scaffoldKey.currentState.hideCurrentSnackBar();
+        },
+      ),
     );
-    response.bodyBytes; //Uint8List
-
-    final Uint8List list = response.bodyBytes.buffer.asUint8List();
-
-
-    final image = PdfImage.file(
-      pdf.document,
-      bytes: list,
-    );
-
-
-    /*
-    final image = PdfImage.file(
-      pdf.document,
-      bytes: list,
-    );
-
-     */
-
-
-    /*
-    PdfImage image = new PdfImage(
-        pdf.document,
-        image: list,
-        width: 50,
-        height: 50);
-     */
-
-    pdf.addPage(
-        pw.MultiPage(
-            pageFormat: PdfPageFormat.a4,
-            margin: pw.EdgeInsets.all(16.0),
-
-            build: (pw.Context context) {
-              return <pw.Widget>[
-                pw.Header(
-                    level: 0,
-                    child: pw.Text(filterOptions=="nao" ? "Relatório do estoque completo" : filterOptions=="falta" ? "Relatório dos itens em falta" : "Relatório ordenado por antiguidade")
-                ),
-                //pw.Image(image)
-              pw.AspectRatio(
-              aspectRatio: 2/1,
-              child: pw.Image(image)),
-
-
-
-              ];
-            }
-        )
-    );
-
-    savePdf();
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
-
-
-  Future savePdf() async {
-    //Directory documentDirectory = await getExternalStorageDirectory();
-
-
-    //Directory documentDirectory = await getApplicationDocumentsDirectory();
-    //String documentPath = documentDirectory.path;
-
-    //File file = File("$documentPath/example.pdf");
-    final _fileName = "listagem_estoque_${DateTime.now().day.toString()}_${DateTime.now().month.toString()}_${DateTime.now().minute.toString()}_${DateTime.now().second.toString()}.pdf";
-    //File file = File("/storage/emulated/0/Download/example.pdf");
-    File file = File("/storage/emulated/0/Download/$_fileName");
-
-    file.writeAsBytesSync(pdf.save());
-
-    print("Arquivo gerado");
-  }
-
-   */
-
-
-  Future<String> networkImageToBase64(String imageUrl) async {
-    http.Response response = await http.get(imageUrl);
-    final bytes = response?.bodyBytes;
-    return (bytes != null ? base64Encode(bytes) : null);
-  }
-
-
-  Future <pw.Page> createPage(){
-
-    pdf.addPage(pw.Page(
-      build: (pw.Context context) => pw.Row(children: <pw.Widget>[
-        pw.Expanded(
-            child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: <pw.Widget>[
-                  pw.Container(
-                      padding: const pw.EdgeInsets.only(left: 30, bottom: 20),
-                      child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: <pw.Widget>[
-                            pw.Text('Parnella Charlesbois',
-                                textScaleFactor: 2,
-                                style: pw.Theme.of(context)
-                                    .defaultTextStyle
-                                    .copyWith(fontWeight: pw.FontWeight.bold)),
-                            pw.Padding(padding: const pw.EdgeInsets.only(top: 10)),
-                            pw.Text('Electrotyper',
-                                textScaleFactor: 1.2,
-                                style: pw.Theme.of(context).defaultTextStyle.copyWith(
-                                    fontWeight: pw.FontWeight.bold)),
-                            pw.Padding(padding: const pw.EdgeInsets.only(top: 20)),
-                            pw.Row(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                                children: <pw.Widget>[
-                                  pw.Column(
-                                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                      children: <pw.Widget>[
-                                        pw.Text('568 Port Washington Road'),
-                                        pw.Text('Nordegg, AB T0M 2H0'),
-                                        pw.Text('Canada, ON'),
-                                      ]),
-                                  pw.Column(
-                                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                      children: <pw.Widget>[
-                                        pw.Text('+1 403-721-6898'),
-                                      ]),
-                                  pw.Padding(padding: pw.EdgeInsets.zero)
-                                ]),
-                          ])),
-                ])),
-        pw.Container(
-          height: double.infinity,
-          width: 2,
-          margin: const pw.EdgeInsets.symmetric(horizontal: 5),
-        ),
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: <pw.Widget>[
-            pw.ClipOval(
-              child: pw.Container(
-                width: 100,
-                height: 100,
-              ),
-            ),
-            pw.Column(children: <pw.Widget>[
-
-            ]),
-            pw.BarcodeWidget(
-              data: 'Parnella Charlesbois',
-              width: 60,
-              height: 60,
-              barcode: pw.Barcode.qrCode(),
-            ),
-          ],
-        )
-      ]),
-    ));
-    //return pdf.save();
-
-
-  }
-
-
 
 }
 
