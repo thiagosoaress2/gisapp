@@ -27,6 +27,8 @@ class SellClass {
 
   Future<bool> addToBd(SellClass venda) async {
 
+    updateProductQuantity(venda.produtos); //remove 1 valor de cada no estoque
+
     //registrando o pedido no bd dos pedidos
     DocumentReference refOrder = await Firestore.instance.collection("vendas")
         .add({
@@ -47,6 +49,25 @@ class SellClass {
     });
 
     return false;
+
+  }
+
+  Future<void> updateProductQuantity(List<ProductClass> produtos){
+
+    produtos.forEach((element) {
+      if(element.quantidade == 0){
+        //do nothing
+      } else {
+
+        Firestore.instance.collection('produtos')
+            .document(element.pId)
+            .updateData({
+          "quantidade" : element.quantidade-1,
+
+        });
+
+      }
+    });
 
   }
 

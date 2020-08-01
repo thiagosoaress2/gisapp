@@ -306,6 +306,7 @@ class _NewSellState extends State<NewSellPage> {
                 },
               ),
             ),
+            SizedBox(height: 150,),
           ],
         )
     );
@@ -722,6 +723,7 @@ class _NewSellState extends State<NewSellPage> {
       _nomeCliente.text= "";
       _valorEntrada.text="";
       _searchController.text="";
+      totalVenda=0.0;
 
     });
   }

@@ -34,17 +34,6 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.blue,
               ),
             ),
-            InkWell( //item 1 inicio
-              onTap: (){ //click
-                Navigator.of(context).pop();
-                Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => HomePage()));
-              },
-              child: Container(
-                margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.home, "Início", Theme.of(context).primaryColor, context),
-              ),
-            ),
             InkWell( //item 2 Cadastrar peça
               onTap: (){ //click
                 Navigator.of(context).pop();
@@ -73,7 +62,7 @@ class _HomePageState extends State<HomePage> {
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.description, "Situação das vendedoras", Theme.of(context).primaryColor, context),
+                child: _drawLine(Icons.assignment_ind, "Pessoal", Theme.of(context).primaryColor, context),
               ),
             ),InkWell( //item 5 Gerar arquivo
               onTap: (){ //click
@@ -83,7 +72,7 @@ class _HomePageState extends State<HomePage> {
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.print, "Gerar arquivo", Theme.of(context).primaryColor, context),
+                child: _drawLine(Icons.print, "Extratos", Theme.of(context).primaryColor, context),
               ),
             ),
             InkWell( //item 1 inicio
