@@ -5,6 +5,8 @@ import 'package:gisapp/classes/product_class.dart';
 
 class FirebaseUtils {
 
+  FirebaseUtils.empty();
+
   Future<String> uploadFile(String _path, String _marker, File _image, ProductClass product) async {
     //path é a pasta (se quiser mais de uma pasta no caminho alterar diretamente o código aqui.
     //marker é um marcado para o nome do arquivo. Aqui ele faz com a data em millis..mas se vários usuarios puderem usar ao mesmo tempo adicinar o uid do user.
@@ -26,5 +28,14 @@ class FirebaseUtils {
     });
   }
 
+  Future<void> deleteFile(String url) async {
+
+    FirebaseStorage.instance
+        .getReferenceFromUrl(url)
+        .then((reference) => reference.delete())
+        .catchError((e) => print(e)
+    );
+
+  }
 
 }

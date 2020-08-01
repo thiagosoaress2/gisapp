@@ -172,7 +172,7 @@ class _CadProdPageState extends State<CadProdPage> {
 
 
                                         //upload da foto
-                                        FirebaseUtils().uploadFile("produtos", "img", photoService.image, produto).whenComplete(() {
+                                        FirebaseUtils.empty().uploadFile("produtos", "img", photoService.image, produto).whenComplete(() {
 
                                           setState(() {
                                             _displaySnackBar(context, "Sucesso. As informações foram salvas!");

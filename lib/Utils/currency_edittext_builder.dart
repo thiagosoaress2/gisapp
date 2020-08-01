@@ -11,7 +11,7 @@ class CurrencyEditTextBuilder {
 
         settings: MoneyTextFormFieldSettings(
             controller: controller,
-            moneyFormatSettings: MoneyFormatSettings(currencySymbol: "R\$"),
+            moneyFormatSettings: MoneyFormatSettings(decimalSeparator: "." ,currencySymbol: "R\$"),
             appearanceSettings: AppearanceSettings(
                 padding: EdgeInsets.all(15.0),
                 labelText: labelTxt,
