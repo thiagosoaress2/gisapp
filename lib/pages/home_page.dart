@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gisapp/pages/cad_prod_page.dart';
 import 'package:gisapp/pages/clientes_page.dart';
 import 'package:gisapp/pages/estoque_page.dart';
-import 'package:gisapp/pages/index_page.dart';
 import 'package:gisapp/pages/new_sell_page.dart';
+import 'package:gisapp/pages/pagamentos_page.dart';
 import 'package:gisapp/pages/vendedoras_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -68,11 +68,11 @@ class _HomePageState extends State<HomePage> {
               onTap: (){ //click
                 Navigator.of(context).pop();
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => IndexPage()));
+                    builder: (context) => PagamentosPage()));
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
-                child: _drawLine(Icons.print, "Extratos", Theme.of(context).primaryColor, context),
+                child: _drawLine(Icons.print, "Pagamentos", Theme.of(context).primaryColor, context),
               ),
             ),
             InkWell( //item 1 inicio

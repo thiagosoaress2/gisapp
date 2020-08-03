@@ -17,6 +17,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
   bool landPageVisible = true;
   bool infoPageVisible = false;
   bool addPageVisible = false;
+  bool extratoPageVisible = false;
 
   bool showUpdateScreenPopup = false;  //exibe o popup pra atualizar o salario e comissão em infoScreen
 
@@ -75,9 +76,9 @@ class _VendedorasPageState extends State<VendedorasPage> {
                 ? _addVendor()
                 : infoPageVisible
                     ? _infos()
-                    : Container(
-                        height: 0.0,
-                        width: 0.0,
+                  : extratoPageVisible
+                      ? _calculosPage()
+                    : Container(height: 0.0, width: 0.0,
                       ));
   }
 
@@ -367,6 +368,25 @@ class _VendedorasPageState extends State<VendedorasPage> {
                       "no"),
                   SizedBox(height: 8.0,),
                   Text(vendedora.modalidade==1 ? "Salário + comissão" : "Comissão se for maior que salário"),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(24.0, 40.0, 24.0, 24.0),
+                    child: Container(
+                      color: Theme.of(context).primaryColor,
+                      child: FlatButton(
+                        child: WidgetsConstructor().makeSimpleText("Calcular comissão", Colors.white, 18.0),
+                        onPressed: (){
+                          setState(() {
+                            setState(() {
+                              extratoPageVisible=true;
+                              infoPageVisible=false;
+                            });
+
+                          });
+
+                        },
+                      ),
+                    ),
+                  )
                 ],
               ),
             )
@@ -466,6 +486,170 @@ class _VendedorasPageState extends State<VendedorasPage> {
     print(vendedora.salario.toStringAsFixed(2));
   }
 
+  Widget _calculosPage(){
+
+    String queryCriteria = "esteMes";
+
+    return Container(
+      height: 700.0,
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                width: 50.0,
+                height: 50.0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.redAccent,
+                    size: 30.0,
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    setState(() {
+                      infoPageVisible = true;
+                      extratoPageVisible = false;
+                    });
+                  },
+                ),
+              ), //btn fechar
+            ],
+          ),
+          //Container(color: Colors.amber, height: 500.0,)
+          Container(
+            height: 500,
+            color: Colors.white,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 4.0,),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.amber,
+                        child: FlatButton(
+                          child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
+                          onPressed: (){
+                            setState(() {
+                              queryCriteria = "esteMes";
+                            });
+
+                          },
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.amber,
+                      ),
+                    ),
+                    SizedBox(width: 4.0,),
+                  ],
+                ),
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                    //vou precisar criar o campo dataQueryVendor e colocar data+id
+                        .collection("vendas").where("vendedoraId", isEqualTo: vendedora.id)
+                        .snapshots(), //este é um listener para observar esta coleção
+                    builder: (context, snapshot) {
+                      //começar a desenhar a tela
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return Center(
+                            //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                            child: CircularProgressIndicator(),
+                          );
+                        default:
+                          List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+                          List<DocumentSnapshot> documentThisMonth = documents;
+                          documentThisMonth.forEach((element) { 
+                            element["dataQuery"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+                          });
+
+                          return ListView.builder(
+                            //aqui vamos começar a construir a listview com os itens retornados
+                              itemCount: documentThisMonth.length,
+                              itemBuilder: (context, index) {
+                                if(queryCriteria=="esteMes"){
+                                  print("entrou no if");
+                                  print(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+                                  print(documents[index].data['dataQuery'].toString());
+                                  return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
+                                      ?  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+
+
+                                        //exibir os detalhes desta venda
+
+                                      });
+                                    },
+                                    child: Card(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              WidgetsConstructor().makeText(documents[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                              WidgetsConstructor().makeSimpleText(documents[index].data["data"], Colors.blueGrey[300], 15.0),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: <Widget>[
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                    children: <Widget>[
+                                                      WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                                      WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+
+                                                      //adicionar aqui o valor já pago
+                                                      //criar uma área de pagamentos
+                                                      //la o usuario vai poder adicionar os pagamentos feitos
+
+                                                    ],
+                                                  ),
+
+                                                ],
+                                              ),
+
+                                            ],
+                                          ),
+                                        )
+                                    ),
+                                  ) : Container(color: Colors.red,);
+                                } else {
+                                  //aqui ficarão os outros filtros
+                                  return Container(color: Colors.red,);
+                                }
+
+                              });
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildRadioOptions(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -490,7 +674,6 @@ class _VendedorasPageState extends State<VendedorasPage> {
     );
   }
 
-
   _displaySnackBar(BuildContext context, String msg) {
     final snackBar = SnackBar(
       content: Text(msg),
@@ -504,4 +687,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
     );
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
+
+
+
 }

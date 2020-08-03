@@ -592,7 +592,7 @@ class _NewSellState extends State<NewSellPage> {
                 SizedBox(height: 16.0,),
                 Container(
                   decoration: BoxDecoration(border: Border.all(color: Theme.of(context).primaryColor), borderRadius: BorderRadius.circular(10.0)),
-                  height: 400.0,
+                  height: _formaPgto!="avista" && _formaPgto!="cartaodeb" ? 500.0 : 335.0,
                   child: Column(
                     children: <Widget>[
                       WidgetsConstructor().makeText("Forma de pagamento", Theme.of(context).primaryColor, 18.0, 4.0, 4.0, "center"),
@@ -601,8 +601,8 @@ class _NewSellState extends State<NewSellPage> {
                           padding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
                           child: Column(
                             children: <Widget>[
-                              _formaPgto!="avista" ? WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeParcelamentos, "Nº parcelas", "Informe a quantidade de parcelas"): Text(""),
-                              _formaPgto!="avista" ? CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_valorEntrada, "Entrada"): Text(""),
+                              _formaPgto!="avista" && _formaPgto!="cartaodeb" ? WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeParcelamentos, "Nº parcelas", "Informe a quantidade de parcelas"): Text(""),
+                              _formaPgto!="avista" && _formaPgto!="cartaodeb" ? CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_valorEntrada, "Entrada"): Text(""),
                             ],
                           )
                       )
@@ -762,6 +762,24 @@ class _NewSellState extends State<NewSellPage> {
 
           description: "Parcelado",
           value: "parcelado",
+          groupValue: _formaPgto,
+          onChanged: (value) => setState(
+                () => _formaPgto = value,
+          ),
+        ),
+        RadioButton(
+
+          description: "Cartão débito",
+          value: "cartaodeb",
+          groupValue: _formaPgto,
+          onChanged: (value) => setState(
+                () => _formaPgto = value,
+          ),
+        ),
+        RadioButton(
+
+          description: "Cartão crédito",
+          value: "cartaocred",
           groupValue: _formaPgto,
           onChanged: (value) => setState(
                 () => _formaPgto = value,
