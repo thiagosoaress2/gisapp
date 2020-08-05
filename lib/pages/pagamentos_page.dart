@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:gisapp/Models/pagamentos_models.dart';
+import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:gisapp/Utils/dates_utils.dart';
 
@@ -20,11 +22,36 @@ class _PagamentosPageState extends State<PagamentosPage> {
   String filter;
 
   List<DocumentSnapshot> documents=[];
+
   int positionSelectedFromDocument;
+
+  List<dynamic> datasPrestacoes;
+  List<dynamic> situacaoPrestacoes;
+  //var situacaoPrestacoes;
+  //var datasPrestacoes;
+  int positionOfData;
+  String selectedDate;
+  String selectedDateSituation;
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
+
+  final TextEditingController _valorPagamento = TextEditingController();
+  double valorPagamento = 0.0;
+
+
+  @override
+  void initState() {
+    _valorPagamento.addListener(() {
+      setState(() {
+        valorPagamento = double.parse(_valorPagamento.text);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: WidgetsConstructor().makeText(
             "Pagamentos em aberto", Colors.white, 16.0, 0.0, 0.0, "no"),
@@ -215,6 +242,24 @@ class _PagamentosPageState extends State<PagamentosPage> {
         color: Colors.white,
         child: Column(
           children: <Widget>[
+              //_myListOfDates(context, positionSelectedFromDocument)
+            Container(
+              alignment: Alignment.topRight,
+              height: 50.0,
+              child: IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.redAccent,
+                  size: 30.0,
+                ),
+                color: Theme.of(context).primaryColor,
+                onPressed: () {
+                  setState(() {
+                    page=0;
+                  });
+                },
+              ),
+            ),
             createExpandable(context, positionSelectedFromDocument)
           ],
         ),
@@ -222,95 +267,198 @@ class _PagamentosPageState extends State<PagamentosPage> {
     );
   }
 
-  Widget addPaymentPage(){
-
-    return Container(
-      color: Colors.redAccent,
-    );
-
-  }
-
   Widget createExpandable(BuildContext context, int position) {
 
-    List<dynamic> datasPrestacoes = documents[position]['datasPrestacoes'];
-    List<dynamic> situacaoPrestacoes = documents[position]['situacoesPrestacoes'];
+    //List<dynamic> datasPrestacoes = documents[position]['datasPrestacoes'];
+   // List<dynamic> situacaoPrestacoes = documents[position]['situacoesPrestacoes'];
 
-    return ExpandablePanel(
-      header: Text("Ver detalhes das prestações"),
-      collapsed: Text("Exibir +", softWrap: true, maxLines: 2, overflow: TextOverflow.ellipsis,), //exibe o custo quando fechado
-      expanded: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    //var teste = documents[position]['situacoesPrestacoes'];
+
+    datasPrestacoes = documents[position]['datasPrestacoes'];
+    situacaoPrestacoes = documents[position]['situacoesPrestacoes'];
+
+    return Expanded(
+      child: ListView(
         children: <Widget>[
-          WidgetsConstructor().makeSimpleText("Vencimentos: ", Colors.grey[600], 15.0),
-          SizedBox(height: 16.0,),
-          datasPrestacoes.length>0 ? _createExpandableLine(context, datasPrestacoes[0], situacaoPrestacoes[0]): Container(),
-          datasPrestacoes.length>1 ? _createExpandableLine(context, datasPrestacoes[1], situacaoPrestacoes[1]): Container(),
-          datasPrestacoes.length>2 ? _createExpandableLine(context, datasPrestacoes[2], situacaoPrestacoes[2]): Container(),
-          datasPrestacoes.length>3 ? _createExpandableLine(context, datasPrestacoes[3], situacaoPrestacoes[3]): Container(),
-          datasPrestacoes.length>4 ? _createExpandableLine(context, datasPrestacoes[4], situacaoPrestacoes[4]): Container(),
-          datasPrestacoes.length>5 ? _createExpandableLine(context, datasPrestacoes[5], situacaoPrestacoes[5]): Container(),
-          datasPrestacoes.length>6 ? _createExpandableLine(context, datasPrestacoes[6], situacaoPrestacoes[6]): Container(),
-          datasPrestacoes.length>7 ? _createExpandableLine(context, datasPrestacoes[7], situacaoPrestacoes[7]): Container(),
-          datasPrestacoes.length>8 ? _createExpandableLine(context, datasPrestacoes[8], situacaoPrestacoes[8]): Container(),
-          datasPrestacoes.length>9 ? _createExpandableLine(context, datasPrestacoes[9], situacaoPrestacoes[9]): Container(),
-          datasPrestacoes.length>10 ? _createExpandableLine(context, datasPrestacoes[10], situacaoPrestacoes[10]): Container(),
-          datasPrestacoes.length>11 ? _createExpandableLine(context, datasPrestacoes[11], situacaoPrestacoes[11]): Container(),
-          datasPrestacoes.length>12 ? _createExpandableLine(context, datasPrestacoes[12], situacaoPrestacoes[12]): Container(),
-          datasPrestacoes.length>13 ? _createExpandableLine(context, datasPrestacoes[13], situacaoPrestacoes[13]): Container(),
-          datasPrestacoes.length>14 ? _createExpandableLine(context, datasPrestacoes[14], situacaoPrestacoes[14]): Container(),
-          datasPrestacoes.length>15 ? _createExpandableLine(context, datasPrestacoes[15], situacaoPrestacoes[15]): Container(),
-          datasPrestacoes.length>16 ? _createExpandableLine(context, datasPrestacoes[16], situacaoPrestacoes[16]): Container(),
-          datasPrestacoes.length>17 ? _createExpandableLine(context, datasPrestacoes[17], situacaoPrestacoes[17]): Container(),
-          datasPrestacoes.length>18 ? _createExpandableLine(context, datasPrestacoes[18], situacaoPrestacoes[18]): Container(),
-          datasPrestacoes.length>19 ? _createExpandableLine(context, datasPrestacoes[19], situacaoPrestacoes[19]): Container(),
-          datasPrestacoes.length>20 ? _createExpandableLine(context, datasPrestacoes[20], situacaoPrestacoes[20]): Container(),
-          datasPrestacoes.length>21 ? _createExpandableLine(context, datasPrestacoes[21], situacaoPrestacoes[21]): Container(),
-          datasPrestacoes.length>22 ? _createExpandableLine(context, datasPrestacoes[22], situacaoPrestacoes[22]): Container(),
-          datasPrestacoes.length>23 ? _createExpandableLine(context, datasPrestacoes[23], situacaoPrestacoes[23]): Container(),
-          datasPrestacoes.length>24 ? _createExpandableLine(context, datasPrestacoes[24], situacaoPrestacoes[24]): Container(),
-          datasPrestacoes.length>25 ? _createExpandableLine(context, datasPrestacoes[25], situacaoPrestacoes[25]): Container(),
-          datasPrestacoes.length>26 ? _createExpandableLine(context, datasPrestacoes[26], situacaoPrestacoes[26]): Container(),
-          datasPrestacoes.length>27 ? _createExpandableLine(context, datasPrestacoes[27], situacaoPrestacoes[27]): Container(),
-          datasPrestacoes.length>28 ? _createExpandableLine(context, datasPrestacoes[28], situacaoPrestacoes[28]): Container(),
-
-
+          WidgetsConstructor().makeText("Prestações", Theme.of(context).primaryColor, 17.0, 16.0, 22.0, "center"),
+          datasPrestacoes.length>0 ? _createExpandableLine(context, datasPrestacoes[0], situacaoPrestacoes[0], 0): Container(),
+          Divider(),
+          datasPrestacoes.length>1 ? _createExpandableLine(context, datasPrestacoes[1], situacaoPrestacoes[1], 1): Container(),
+          Divider(),
+          datasPrestacoes.length>2 ? _createExpandableLine(context, datasPrestacoes[2], situacaoPrestacoes[2], 2): Container(),
+          Divider(),
+          datasPrestacoes.length>3 ? _createExpandableLine(context, datasPrestacoes[3], situacaoPrestacoes[3], 3): Container(),
+          Divider(),
+          datasPrestacoes.length>4 ? _createExpandableLine(context, datasPrestacoes[4], situacaoPrestacoes[4],4): Container(),
+          Divider(),
+          datasPrestacoes.length>5 ? _createExpandableLine(context, datasPrestacoes[5], situacaoPrestacoes[5],5): Container(),
+          Divider(),
+          datasPrestacoes.length>6 ? _createExpandableLine(context, datasPrestacoes[6], situacaoPrestacoes[6],6): Container(),
+          Divider(),
+          datasPrestacoes.length>7 ? _createExpandableLine(context, datasPrestacoes[7], situacaoPrestacoes[7],7): Container(),
+          Divider(),
+          datasPrestacoes.length>8 ? _createExpandableLine(context, datasPrestacoes[8], situacaoPrestacoes[8],8): Container(),
+          Divider(),
+          datasPrestacoes.length>9 ? _createExpandableLine(context, datasPrestacoes[9], situacaoPrestacoes[9],9): Container(),
+          Divider(),
+          datasPrestacoes.length>10 ? _createExpandableLine(context, datasPrestacoes[10], situacaoPrestacoes[10], 10): Container(),
+          Divider(),
+          datasPrestacoes.length>11 ? _createExpandableLine(context, datasPrestacoes[11], situacaoPrestacoes[11], 11): Container(),
+          Divider(),
+          datasPrestacoes.length>12 ? _createExpandableLine(context, datasPrestacoes[12], situacaoPrestacoes[12], 12): Container(),
+          Divider(),
+          datasPrestacoes.length>13 ? _createExpandableLine(context, datasPrestacoes[13], situacaoPrestacoes[13], 13): Container(),
+          Divider(),
+          datasPrestacoes.length>14 ? _createExpandableLine(context, datasPrestacoes[14], situacaoPrestacoes[14], 14): Container(),
+          Divider(),
+          datasPrestacoes.length>15 ? _createExpandableLine(context, datasPrestacoes[15], situacaoPrestacoes[15], 15): Container(),
+          Divider(),
+          datasPrestacoes.length>16 ? _createExpandableLine(context, datasPrestacoes[16], situacaoPrestacoes[16], 16): Container(),
+          Divider(),
+          datasPrestacoes.length>17 ? _createExpandableLine(context, datasPrestacoes[17], situacaoPrestacoes[17], 17): Container(),
+          Divider(),
+          datasPrestacoes.length>18 ? _createExpandableLine(context, datasPrestacoes[18], situacaoPrestacoes[18], 18): Container(),
+          Divider(),
+          datasPrestacoes.length>19 ? _createExpandableLine(context, datasPrestacoes[19], situacaoPrestacoes[19], 19): Container(),
+          Divider(),
+          datasPrestacoes.length>20 ? _createExpandableLine(context, datasPrestacoes[20], situacaoPrestacoes[20], 20): Container(),
+          Divider(),
+          datasPrestacoes.length>21 ? _createExpandableLine(context, datasPrestacoes[21], situacaoPrestacoes[21], 21): Container(),
+          Divider(),
+          datasPrestacoes.length>22 ? _createExpandableLine(context, datasPrestacoes[22], situacaoPrestacoes[22], 22): Container(),
+          Divider(),
+          datasPrestacoes.length>23 ? _createExpandableLine(context, datasPrestacoes[23], situacaoPrestacoes[23], 23): Container(),
+          Divider(),
+          datasPrestacoes.length>24 ? _createExpandableLine(context, datasPrestacoes[24], situacaoPrestacoes[24], 24): Container(),
+          Divider(),
+          datasPrestacoes.length>25 ? _createExpandableLine(context, datasPrestacoes[25], situacaoPrestacoes[25], 25): Container(),
+          Divider(),
+          datasPrestacoes.length>26 ? _createExpandableLine(context, datasPrestacoes[26], situacaoPrestacoes[26], 26): Container(),
+          Divider(),
+          datasPrestacoes.length>27 ? _createExpandableLine(context, datasPrestacoes[27], situacaoPrestacoes[27], 27): Container(),
+          Divider(),
+          datasPrestacoes.length>28 ? _createExpandableLine(context, datasPrestacoes[28], situacaoPrestacoes[28], 28): Container(),
+          Divider(),
 
         ],
       ),
-      tapHeaderToExpand: true,
-      hasIcon: true,
     );
   }
 
-  Widget _createExpandableLine(BuildContext context, String date, String situation) {
+  Widget _createExpandableLine(BuildContext context, String date, String situation, int position) {
 
     DateUtils().doesThisDateIsBiggerThanToday(date);
     print(DateUtils().doesThisDateIsBiggerThanToday(date));
 
-      return GestureDetector(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(8.0, 18.0, 8.0, 14.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(date, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
-              Text(situation, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
-            ],
+    return GestureDetector(
+
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8.0, 18.0, 8.0, 20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(date, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
+            Text(situation, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
+          ],
+        ),
+      ),
+
+      onTap: (){
+        setState(() {
+          page=2;
+          positionOfData = position;
+        });
+      },
+
+    );
+
+
+  }
+
+  Widget addPaymentPage(){
+
+    //final TextEditingController _valorPagamento = TextEditingController();
+    //double valorPagamento = 0.0;
+    final TextEditingController _observacaoController = TextEditingController();
+
+
+    /*
+    _valorPagamento.addListener(() {
+      setState(() {
+        valorPagamento = double.parse(_valorPagamento.text);
+      });
+    });
+
+     */
+
+    return ListView(
+      children: <Widget>[
+        Container(
+          alignment: Alignment.topRight,
+          height: 50.0,
+          child: IconButton(
+            icon: Icon(
+              Icons.close,
+              color: Colors.redAccent,
+              size: 30.0,
+            ),
+            color: Theme.of(context).primaryColor,
+            onPressed: () {
+              setState(() {
+                page=1;
+              });
+            },
           ),
         ),
+        SizedBox(height: 20.0,),
+        Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              WidgetsConstructor().makeText("Você está editando pagamento para prestação com vencimento em: "+datasPrestacoes[positionOfData], Colors.grey[600], 16.0, 16.0, 16.0, "center"),
+              CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_valorPagamento, "Valor pago"),
+              Padding(
+                padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 40.0),
+                child: WidgetsConstructor().makeEditText(_observacaoController, "Observação", null),
+              ),
+              Container(
+                padding: EdgeInsets.all(16.0),
+                height: 60.0,
+                color: Theme.of(context).primaryColor,
+                child: FlatButton(
+                  child: WidgetsConstructor().makeSimpleText("Salvar", Colors.white, 18.0),
+                  onPressed: (){
+                    //salvar
+                    situacaoPrestacoes[positionOfData] = double.parse(_valorPagamento.text).toStringAsFixed(2);
+                    PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes);
+                    //_displaySnackBar(context, "O valor foi salvo");
+                  },
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
 
-        onTap: () {
-          setState(() {
-            //page=3;
-            print(date);
-          });
-
-        },
-
-      );
   }
 
 
+
+  _displaySnackBar(BuildContext context, String msg) {
+
+    final snackBar = SnackBar(
+      content: Text(msg),
+      duration: Duration(seconds: 3),
+      action: SnackBarAction(
+        label: "Ok",
+        onPressed: (){
+          _scaffoldKey.currentState.hideCurrentSnackBar();
+        },
+      ),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
 
 
 
