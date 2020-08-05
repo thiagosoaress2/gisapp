@@ -1,6 +1,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_format/date_format.dart';
 import 'package:gisapp/classes/product_class.dart';
+import 'package:intl/intl.dart';
 
 class SellClass {
 
@@ -25,7 +27,7 @@ class SellClass {
 
   SellClass.empty();
 
-  Future<bool> addToBd(SellClass venda) async {
+  Future<void> addToBd(SellClass venda) async {
 
     updateProductQuantity(venda.produtos); //remove 1 valor de cada no estoque
 
@@ -46,9 +48,33 @@ class SellClass {
       'totalSemDesconto' : venda.totalSemDesconto,
       'produtos' : ProductClass.ConvertObjectsToMap(listOfObjectsOriginal: venda.produtos),
 
-    });
+    }).then((value) {
 
-    return false;
+      if(venda.parcelas!=1){
+
+        List<String> datasPrestacoes = _getPrestacoes(venda.parcelas, venda.data, venda);
+        List<String> situacaoPrestacoes = _getSituacaoPrestacoes(datasPrestacoes);
+
+        Firestore.instance.collection("dividas").add({
+
+          'vendaId' : value.documentID,
+          'vendedoraId' : venda.vendedoraId,
+          'parcelas' : venda.parcelas,
+          'clienteId' : venda.clienteId,
+          'cliente' : venda.cliente,
+
+          'datasPrestacoes' : datasPrestacoes,
+          'situacoesPrestacoes' : situacaoPrestacoes,
+
+          'saldoDevedor' : (venda.valor-venda.entrada),
+
+        });
+
+      }
+
+
+    });
+    //return false;
 
   }
 
@@ -70,5 +96,59 @@ class SellClass {
     });
 
   }
+
+  List<String> _getPrestacoes(int quant, String data, SellClass venda){
+
+    List<String> datas=[];
+    String lastDate;
+    int cont=0;
+    while(cont<quant){
+
+      if(cont==0){
+        datas.add(_returnMe30DaysFromThisDate(data));
+        lastDate = datas[0];
+      } else {
+        datas.add(_returnMe30DaysFromThisDate(lastDate));
+        lastDate = datas[cont];
+      }
+
+      cont++;
+
+    }
+
+    return datas;
+
+  }
+
+  String _convertStringFromDate(DateTime strDate) {
+    final newDate = formatDate(strDate, [dd, '/', mm, '/', yyyy]);
+    return newDate;
+  }
+
+  DateTime _convertDateFromString(String strDate){
+    DateTime todayDate = DateTime.parse(strDate.split('/').reversed.join());
+    return todayDate;
+  }
+
+  String _returnMe30DaysFromThisDate(String strDate){
+    DateTime theDate = _convertDateFromString(strDate);
+    var thirtyDaysFromNow = theDate.add(new Duration(days: 30));
+    String formattedDate = _convertStringFromDate(thirtyDaysFromNow);
+    return formattedDate;
+  }
+
+  List<String> _getSituacaoPrestacoes(List<String> datas){
+
+    List<String> prestacoesSit=[];
+    int cont=0;
+    while(cont<datas.length){
+      prestacoesSit.add('Em aberto');
+      cont++;
+    }
+
+    return prestacoesSit;
+
+  }
+
 
 }
