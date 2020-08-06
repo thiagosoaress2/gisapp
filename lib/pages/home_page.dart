@@ -97,6 +97,17 @@ class _HomePageState extends State<HomePage> {
                 child: _drawLine(Icons.format_list_numbered, "Estoque", Theme.of(context).primaryColor, context),
               ),
             ),
+            InkWell( //Estoque
+              onTap: (){ //click
+                Navigator.of(context).pop();
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => EstoquePage()));
+              },
+              child: Container(
+                margin: EdgeInsets.only(left: 20.0),
+                child: _drawLine(Icons.playlist_add_check, "Resumo de vendas", Theme.of(context).primaryColor, context),
+              ),
+            ),
           ],
         ),
       ),

@@ -39,6 +39,7 @@ class _PagamentosPageState extends State<PagamentosPage> {
   double valorPagamento = 0.0;
 
 
+
   @override
   void initState() {
     _valorPagamento.addListener(() {
@@ -47,6 +48,14 @@ class _PagamentosPageState extends State<PagamentosPage> {
       });
     });
   }
+
+  @override
+  void dispose() {
+    _valorPagamento.dispose();
+    super.dispose();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -112,41 +121,42 @@ class _PagamentosPageState extends State<PagamentosPage> {
                                 });
                               },
                               child: Card(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    SizedBox(width: 10.0,),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .start,
-                                      children: <Widget>[
-                                        WidgetsConstructor().makeSimpleText("Cliente: "+
-                                            documents[index].data["cliente"],
-                                            Theme
-                                                .of(context)
-                                                .primaryColor, 18.0),
-                                        SizedBox(height: 10.0,),
-                                        Container(
-                                          width: 150,
-                                          child: WidgetsConstructor()
-                                              .makeSimpleText("Saldo devedor: R\$ "+documents[index]
-                                              .data["saldoDevedor"].toStringAsFixed(2),
-                                              Colors.grey[400], 14.0),),
-                                        Container(
-                                          width: 150,
-                                          child: WidgetsConstructor()
-                                              .makeSimpleText("Parcelado em "+documents[index]
-                                              .data["parcelas"].toString()+" x",
-                                              Colors.grey[400], 14.0),
-                                        ),
-                                        SizedBox(height: 10.0,),
-                                        //createExpandable(context, index),
-                                        //createExpandable(context, index),
+                                child: Expanded(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(width: 10.0,),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .start,
+                                        children: <Widget>[
+                                          WidgetsConstructor().makeSimpleText("Cliente: "+
+                                              documents[index].data["cliente"],
+                                              Theme
+                                                  .of(context)
+                                                  .primaryColor, 18.0),
+                                          SizedBox(height: 10.0,),
+                                          Container(
+                                            child: WidgetsConstructor()
+                                                .makeSimpleText("Saldo devedor: R\$ "+documents[index]
+                                                .data["saldoDevedor"].toStringAsFixed(2),
+                                                Colors.grey[600], 16.0),),
+                                          Container(
+                                            width: 150,
+                                            child: WidgetsConstructor()
+                                                .makeSimpleText("Parcelado em "+documents[index]
+                                                .data["parcelas"].toString()+" x",
+                                                Colors.grey[400], 14.0),
+                                          ),
+                                          SizedBox(height: 10.0,),
+                                          //createExpandable(context, index),
+                                          //createExpandable(context, index),
 
 
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
 
                               ),
@@ -158,66 +168,49 @@ class _PagamentosPageState extends State<PagamentosPage> {
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  //click
+                                  //click no card da lista
+                                  page=1;
+                                  positionSelectedFromDocument = index;
 
                                 });
                               },
                               child: Card(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    SizedBox(width: 10.0,),
-                                    Image.network(
-                                      documents[index].data["imagem"],
-                                      width: 140.0,
-                                      height: 140.0,
-                                      fit: BoxFit.cover,),
-                                    SizedBox(width: 10.0,),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .start,
-                                      children: <Widget>[
-                                        WidgetsConstructor().makeSimpleText(
-                                            documents[index].data["codigo"],
-                                            Theme
-                                                .of(context)
-                                                .primaryColor, 18.0),
-                                        SizedBox(height: 10.0,),
-                                        Container(
-                                          width: 150,
-                                          child: WidgetsConstructor()
-                                              .makeSimpleText(documents[index]
-                                              .data["descricao"],
-                                              Colors.grey[400], 14.0),),
-                                        SizedBox(height: 10.0,),
-                                        Container(
-                                          padding: EdgeInsets.all(4.0),
-                                          color: Theme
-                                              .of(context)
-                                              .primaryColor,
-                                          child: WidgetsConstructor()
-                                              .makeSimpleText("R\$ " +
-                                              documents[index].data["preco"]
-                                                  .toStringAsFixed(2),
-                                              Colors.white, 20.0),
-                                        ),
-                                      ],
-                                    ),
-                                    //exibe a quantidade de itens. Se for 1 ou 2 fica amarelo. Se for 0 fica vermelho.
-                                    documents[index].data["quantidade"] > 2
-                                        ? WidgetsConstructor().makeSimpleText(
-                                        documents[index].data["quantidade"]
-                                            .toString(), Colors.blueGrey, 15.0)
-                                        :
-                                    documents[index].data["quantidade"] > 0
-                                        ? WidgetsConstructor().makeSimpleText(
-                                        documents[index].data["quantidade"]
-                                            .toString(), Colors.amber, 15.0)
-                                        :
-                                    WidgetsConstructor().makeSimpleText(
-                                        documents[index].data["quantidade"]
-                                            .toString(), Colors.red, 15.0),
-                                  ],
+                                child: Expanded(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(width: 10.0,),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .start,
+                                        children: <Widget>[
+                                          WidgetsConstructor().makeSimpleText("Cliente: "+
+                                              documents[index].data["cliente"],
+                                              Theme
+                                                  .of(context)
+                                                  .primaryColor, 18.0),
+                                          SizedBox(height: 10.0,),
+                                          Container(
+                                            child: WidgetsConstructor()
+                                                .makeSimpleText("Saldo devedor: R\$ "+documents[index]
+                                                .data["saldoDevedor"].toStringAsFixed(2),
+                                                Colors.grey[600], 16.0),),
+                                          Container(
+                                            width: 150,
+                                            child: WidgetsConstructor()
+                                                .makeSimpleText("Parcelado em "+documents[index]
+                                                .data["parcelas"].toString()+" x",
+                                                Colors.grey[400], 14.0),
+                                          ),
+                                          SizedBox(height: 10.0,),
+                                          //createExpandable(context, index),
+                                          //createExpandable(context, index),
+
+
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
 
                               ),
@@ -260,7 +253,15 @@ class _PagamentosPageState extends State<PagamentosPage> {
                 },
               ),
             ),
-            createExpandable(context, positionSelectedFromDocument)
+            createExpandable(context, positionSelectedFromDocument),
+            Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                WidgetsConstructor().makeSimpleText("Total pago", Colors.grey, 14.0),
+                WidgetsConstructor().makeSimpleText(PagamentosModels().checkPaymentsTotal(situacaoPrestacoes), Colors.grey, 14.0),
+              ],
+            ),
           ],
         ),
       ),
@@ -357,8 +358,8 @@ class _PagamentosPageState extends State<PagamentosPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(date, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
-            Text(situation, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : Colors.redAccent),),
+            Text(date, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : situation!="Em aberto" ? Colors.grey[400] :  Colors.redAccent),),
+            Text(situation, style: TextStyle(color: DateUtils().doesThisDateIsBiggerThanToday(date) ? Colors.grey : situation!="Em aberto" ? Colors.grey[400] : Colors.redAccent),),
           ],
         ),
       ),
@@ -429,8 +430,18 @@ class _PagamentosPageState extends State<PagamentosPage> {
                   child: WidgetsConstructor().makeSimpleText("Salvar", Colors.white, 18.0),
                   onPressed: (){
                     //salvar
-                    situacaoPrestacoes[positionOfData] = double.parse(_valorPagamento.text).toStringAsFixed(2);
-                    PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes);
+                    if(_valorPagamento.text.isEmpty || _valorPagamento.text=="0.0" || _valorPagamento.text=="0,0" || _valorPagamento.text=="0,00"){
+                      _displaySnackBar(context, "Informe o valor pago");
+                    } else {
+                      situacaoPrestacoes[positionOfData] = double.parse(_valorPagamento.text).toStringAsFixed(2);
+                      PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes);
+                      _displaySnackBar(context, "A atualização foi salva");
+                      setState(() {
+                        page=0;
+                      });
+
+                    }
+
                     //_displaySnackBar(context, "O valor foi salvo");
                   },
                 ),
