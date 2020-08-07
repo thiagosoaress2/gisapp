@@ -42,6 +42,14 @@ class _PagamentosPageState extends State<PagamentosPage> {
 
   @override
   void initState() {
+
+
+    _searchController.addListener(() {
+      setState(() {
+        filter = _searchController.text;
+      });
+    });
+
     _valorPagamento.addListener(() {
       setState(() {
         valorPagamento = double.parse(_valorPagamento.text);

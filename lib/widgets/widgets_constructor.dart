@@ -150,5 +150,23 @@ class WidgetsConstructor {
     return Text(msg, style: TextStyle(color: color, fontSize: Size) ,);
   }
 
+  BoxDecoration myBoxDecoration(Color color, double width, double radius) {
+
+    //use assim: no container adicione a linha decoration: WidgetsConstructor().myBoxDecoration(Theme.of(context).primaryColor, 1.0, 0.0),
+
+    //obs: Use 0.0 para nao colocar borda redonda
+
+    return BoxDecoration(
+      border: Border.all(
+        color: color, //
+        width: width, //                   <--- border width here
+      ),
+
+      borderRadius: BorderRadius.all(Radius.circular(radius)),
+
+
+    );
+  }
+
 
 }

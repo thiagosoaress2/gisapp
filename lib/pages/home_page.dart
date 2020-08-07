@@ -4,6 +4,7 @@ import 'package:gisapp/pages/clientes_page.dart';
 import 'package:gisapp/pages/estoque_page.dart';
 import 'package:gisapp/pages/new_sell_page.dart';
 import 'package:gisapp/pages/pagamentos_page.dart';
+import 'package:gisapp/pages/resumo_vendas_page.dart';
 import 'package:gisapp/pages/vendedoras_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -101,7 +102,7 @@ class _HomePageState extends State<HomePage> {
               onTap: (){ //click
                 Navigator.of(context).pop();
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => EstoquePage()));
+                    builder: (context) => ResumoVendasPage()));
               },
               child: Container(
                 margin: EdgeInsets.only(left: 20.0),
