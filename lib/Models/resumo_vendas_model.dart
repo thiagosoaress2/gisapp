@@ -15,6 +15,9 @@ abstract class _ResumoVendasModel with Store {
   @observable
   String filterQuery="";
 
+  @observable
+  bool printing = false;
+
   @action
   void setFilterQuery(String query){
     filterQuery=query;
@@ -28,6 +31,16 @@ abstract class _ResumoVendasModel with Store {
   @action
   void setPage(int newPage){
     page = newPage;
+  }
+
+  @action
+  void setPrinting(){
+    printing=true;
+  }
+
+  @action
+  void setPrintingDone(){
+    printing = false;
   }
 
 

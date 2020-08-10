@@ -68,7 +68,12 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
             icon: Icon(Icons.print, color: Colors.white,),
             onPressed: (){
               resumoVendasModel.setPage(3);
-          },
+
+              List<DocumentSnapshot> listCopy = ResumoVendasClass().filterPlease(tipoFiltro, filter, documents, mesSelecionado, mesFinal);
+              ResumoVendasClass().printListInPdf(tipoFiltro, filter, listCopy, mesSelecionado, mesFinal);
+
+
+            },
           )
         ],
       ),
@@ -85,6 +90,7 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
   }
 
   Widget landPage(){
+
     return  Container(
         color: Colors.white,
         height: 700,
@@ -106,11 +112,6 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
                         child: Text("Este mês"),
                         onPressed: (){
 
-                          //createFile();
-                         // setState(() {
-                           // getCsv();
-                          //});
-
 
 
                           setState(() {
@@ -119,6 +120,7 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
                             _dateLimitController.text="";
                             total = ResumoVendasClass().calculeTotal(tipoFiltro, filter, documents, mesSelecionado, mesFinal); //ajusta o total na row no bottom da pagina
                           });
+
 
 
 
@@ -178,8 +180,8 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
               ),
             ),
             Expanded(
-        child:StreamBuilder<QuerySnapshot>(
-          stream: Firestore.instance.collection("vendas").snapshots(),
+        child: StreamBuilder<QuerySnapshot>(
+           stream: Firestore.instance.collection("vendas").where('dataQuery', isEqualTo: DateUtils().returnThisMonthAndYear()).snapshots(),
           //este é um listener para observar esta coleção
           builder: (context, snapshot) { //começar a desenhar a tela
             switch (snapshot.connectionState) {
@@ -410,12 +412,27 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
       child: Column(
         children: <Widget>[
           SizedBox(height: 200.0,),
-          Center(
+          resumoVendasModel.printing == true ? Center(
             child: CircularProgressIndicator(),
-          ),
+          ) : Container(),
+
           SizedBox(height: 30.0,),
-          WidgetsConstructor().makeSimpleText("Aguarde, gerando arquivo", Colors.grey[700], 17.0),
-          WidgetsConstructor().makeSimpleText("Você encontra o arquivo na pasta Downloads.", Colors.grey[400], 12.0),
+          resumoVendasModel.printing == true ? WidgetsConstructor().makeSimpleText("Aguarde, gerando arquivo", Colors.grey[700], 17.0)
+          : WidgetsConstructor().makeSimpleText("Pronto!", Colors.grey[700], 17.0),
+          resumoVendasModel.printing == false ? WidgetsConstructor().makeSimpleText("Você encontra o arquivo na pasta Downloads.", Colors.grey[400], 12.0)
+          : Container(),
+          SizedBox(height: 30.0,),
+          resumoVendasModel.printing == false ? Container(
+            height: 65.0,
+            color: Theme.of(context).primaryColor,
+            child: FlatButton(
+              child: WidgetsConstructor().makeSimpleText("Fechar", Colors.white, 16.0),
+              onPressed: () {
+                //ResumoVendasModel().setPrinting();
+                resumoVendasModel.setPage(0);
+              },
+            ),
+          ) : Container(),
         ],
       )
     );
@@ -449,7 +466,8 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
       ),
     );
   }
-  
+
+
 
 
 }

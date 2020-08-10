@@ -4,26 +4,32 @@ import 'package:date_format/date_format.dart';
 
 class DateUtils {
 
-  String _convertStringFromDate(DateTime strDate) {
+  String convertStringFromDate(DateTime strDate) {
     final newDate = formatDate(strDate, [dd, '/', mm, '/', yyyy]);
     return newDate;
   }
 
-  DateTime _convertDateFromString(String strDate){
+  DateTime convertDateFromString(String strDate){
     DateTime todayDate = DateTime.parse(strDate.split('/').reversed.join());
     return todayDate;
   }
 
+  String returnThisMonthAndYear() {
+    var monthYear = DateTime.now();
+    final formatted = formatDate(monthYear, [mm, '/', yyyy]);
+    return formatted;
+  }
+
   String _returnMeXDaysInFutureFromThisDate(String strDate, int daysToAdd){
-    DateTime theDate = _convertDateFromString(strDate);
+    DateTime theDate = convertDateFromString(strDate);
     var thirtyDaysFromNow = theDate.add(new Duration(days: daysToAdd));
-    String formattedDate = _convertStringFromDate(thirtyDaysFromNow);
+    String formattedDate = convertStringFromDate(thirtyDaysFromNow);
     return formattedDate;
   }
 
   bool doesThisDateIsBigger (String date1, String date2){
-    var date1Formatted = _convertDateFromString(date1);
-    var date2Formatted = _convertDateFromString(date2);
+    var date1Formatted = convertDateFromString(date1);
+    var date2Formatted = convertDateFromString(date2);
 
     final difference = date2Formatted.difference(date1Formatted).inDays;
 
@@ -36,7 +42,7 @@ class DateUtils {
 
   bool doesThisDateIsBiggerThanToday (String date){
 
-    var dateFormatted = _convertDateFromString(date);
+    var dateFormatted = convertDateFromString(date);
     var today = DateTime.now();
 
     final difference = today.difference(dateFormatted).inDays;
@@ -50,6 +56,16 @@ class DateUtils {
     }
 
 
+  }
+
+  String giveMeTheYear(DateTime date){
+
+    return date.year.toString();
+  }
+
+  String giveMeTheMonth(DateTime date){
+
+    return date.month.toString();
   }
 
 }
