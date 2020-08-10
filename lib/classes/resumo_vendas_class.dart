@@ -1,4 +1,6 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class ResumoVendasClass {
 
@@ -61,5 +63,29 @@ class ResumoVendasClass {
   }
 
 
+  String formaPgtoFormattada(String formaPgto, List<DocumentSnapshot>list, int index){
+
+    String returnString;
+      if(formaPgto=="avista"){
+        returnString = "Dinheiro à vista";
+      } else if(formaPgto=="cartaodeb"){
+        returnString = "Cartão de débito à vista";
+      } else if(formaPgto=="crediario"){
+        returnString = "Crediário em ${list[index]['parcelas']}x";
+      } else if(formaPgto=="parcelado"){
+        returnString = "Parcelado em ${list[index]['parcelas']}x";
+      } else {
+        returnString = "Cartão de crédito em ${list[index]['parcelas']}x";
+      }
+
+      return returnString;
+
+  }
+
+  String retorneItensDestaVenda(List<DocumentSnapshot>list, int index){
+
+    List<dynamic> listProd
+
+  }
 
 }

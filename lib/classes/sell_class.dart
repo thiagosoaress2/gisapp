@@ -18,12 +18,13 @@ class SellClass {
   String vendedoraId;
   double entrada;
   double totalSemDesconto;
+  String nBoleto; //vai ser sempre numero mas vamos registrar como string pois sao numeros longos
   List<ProductClass> produtos;
   //List<String> produtos;
 
   List<String> listOfProdutosId;
 
-  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada, this.totalSemDesconto);
+  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada, this.totalSemDesconto, this.nBoleto);
 
   SellClass.empty();
 
@@ -46,6 +47,7 @@ class SellClass {
       'vendedoraId' : venda.vendedoraId,
       'entrada' : venda.entrada,
       'totalSemDesconto' : venda.totalSemDesconto,
+      'nBoleto' : venda.nBoleto,
       'produtos' : ProductClass.ConvertObjectsToMap(listOfObjectsOriginal: venda.produtos),
 
     }).then((value) {
@@ -67,6 +69,8 @@ class SellClass {
           'situacoesPrestacoes' : situacaoPrestacoes,
 
           'saldoDevedor' : (venda.valor-venda.entrada),
+
+          'nBoleto' : venda.nBoleto,
 
         });
 

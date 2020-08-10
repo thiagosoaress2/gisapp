@@ -50,6 +50,7 @@ class _NewSellState extends State<NewSellPage> {
   final TextEditingController _nomeCliente = TextEditingController();
   //final _totalVenda = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
   final TextEditingController _totalVenda = TextEditingController();
+  final TextEditingController _nBoletoController = TextEditingController();
 
   final TextEditingController _searchController = TextEditingController();
   String filter;
@@ -640,6 +641,11 @@ class _NewSellState extends State<NewSellPage> {
 
                   ],
                 ),
+                SizedBox(height: 16.0,),
+                Container(
+                  height: 70.0,
+                  child: WidgetsConstructor().makeFormEditTextNumberOnly(_nBoletoController, "Número boleto", "Innforme o número do boleto"),
+                ),
                 SizedBox(height: 30.0,),
                 Container(
                   height: 60.0,
@@ -669,7 +675,7 @@ class _NewSellState extends State<NewSellPage> {
                                 });
 
                                 //vamos preencher o objeto venda
-                                SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, totalVenda);
+                                SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, totalVenda, _nBoletoController.text);
                                 //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), formaPgto, _nomeCliente.text, isRegisteredClient ? cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), vendedora.nome, vendedora.id, produtosIdCarrinho);
 
                                 SellClass.empty().addToBd(venda);

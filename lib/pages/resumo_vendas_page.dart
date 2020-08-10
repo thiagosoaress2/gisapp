@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,8 @@ import 'package:gisapp/Utils/dates_utils.dart';
 import 'package:gisapp/classes/resumo_vendas_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 class ResumoVendasPage extends StatefulWidget {
   @override
@@ -14,6 +18,8 @@ class ResumoVendasPage extends StatefulWidget {
 }
 
 class _ResumoVendasPageState extends State<ResumoVendasPage> {
+
+
 
   ResumoVendasModel resumoVendasModel = ResumoVendasModel();
 
@@ -100,12 +106,21 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
                         child: Text("Este mês"),
                         onPressed: (){
 
+                          //createFile();
+                         // setState(() {
+                           // getCsv();
+                          //});
+
+
+
                           setState(() {
                             tipoFiltro="nao";
                             _dateController.text="";
                             _dateLimitController.text="";
                             total = ResumoVendasClass().calculeTotal(tipoFiltro, filter, documents, mesSelecionado, mesFinal); //ajusta o total na row no bottom da pagina
                           });
+
+
 
                         },
                       ),
@@ -414,6 +429,10 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
           children: <Widget>[
 
             WidgetsConstructor().makeText(" "+documents[index]['cliente'], Theme.of(context).primaryColor, 16.0, 5.0, 4.0, "no"),
+            WidgetsConstructor().makeSimpleText("Nº boleto: "+documents[index]['nBoleto'], Colors.grey[300], 12.0),
+            WidgetsConstructor().makeSimpleText("Forma de pgto: "+ResumoVendasClass().formaPgtoFormattada(documents[index]['formaPgto'], documents, index), Colors.grey[300], 12.0),
+            WidgetsConstructor().makeSimpleText("Itens: "+ResumoVendasClass().formaPgtoFormattada(documents[index]['formaPgto'], documents, index), Colors.grey[300], 12.0),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -428,7 +447,7 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
       ),
     );
   }
-
+  
 
 
 }
