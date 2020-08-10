@@ -296,7 +296,7 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
           },
         ),
       ),
-            SizedBox(height: 150,),
+            SizedBox(height: 10.0,),
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
@@ -426,12 +426,14 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
       padding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 4.0),
       child: Card(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
 
             WidgetsConstructor().makeText(" "+documents[index]['cliente'], Theme.of(context).primaryColor, 16.0, 5.0, 4.0, "no"),
             WidgetsConstructor().makeSimpleText("Nº boleto: "+documents[index]['nBoleto'], Colors.grey[300], 12.0),
             WidgetsConstructor().makeSimpleText("Forma de pgto: "+ResumoVendasClass().formaPgtoFormattada(documents[index]['formaPgto'], documents, index), Colors.grey[300], 12.0),
-            WidgetsConstructor().makeSimpleText("Itens: "+ResumoVendasClass().formaPgtoFormattada(documents[index]['formaPgto'], documents, index), Colors.grey[300], 12.0),
+            WidgetsConstructor().makeSimpleText("Itens: "+ResumoVendasClass().retorneItensDestaVenda(documents, index), Colors.grey[300], 12.0),
+            SizedBox(height: 10.0),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -84,7 +84,19 @@ class ResumoVendasClass {
 
   String retorneItensDestaVenda(List<DocumentSnapshot>list, int index){
 
-    List<dynamic> listProd
+    List<dynamic> listProduto = list[index]['produtos']; //pegamos todos os valores dos arrays guardados (cada item é um array)
+    int cont=0;
+    String value;
+    while(cont<listProduto.length){
+      if(cont==0){
+        value = listProduto[cont]['item'].toString();
+      } else {
+        value = value+", "+listProduto[cont]['item'].toString();
+      }
+      cont++;
+    }
+
+    return value;
 
   }
 

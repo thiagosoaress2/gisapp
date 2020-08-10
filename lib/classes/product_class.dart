@@ -92,6 +92,7 @@ class ProductClass {
   Map toMap(){
     return {
       'productId': pId,
+      'item' : codigo
       //'quantity': quantity,
     };
   }
