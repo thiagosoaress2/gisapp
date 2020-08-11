@@ -180,7 +180,8 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
               ),
             ),
             Expanded(
-        child: StreamBuilder<QuerySnapshot>(
+        child:
+        tipoFiltro=="nao" ? StreamBuilder<QuerySnapshot>(
            stream: Firestore.instance.collection("vendas").where('dataQuery', isEqualTo: DateUtils().returnThisMonthAndYear()).snapshots(),
           //este é um listener para observar esta coleção
           builder: (context, snapshot) { //começar a desenhar a tela
@@ -293,6 +294,239 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
                     //se nao tiver resultado exibe nada
                   }
                   );
+
+            }
+          },
+        )
+            : tipoFiltro=="mes" ? StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance.collection("vendas").where('dataQuery', isEqualTo: mesSelecionado).snapshots(),
+          //este é um listener para observar esta coleção
+          builder: (context, snapshot) { //começar a desenhar a tela
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+              case ConnectionState.none:
+                return Center( //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                  child: CircularProgressIndicator(),
+                );
+              default: documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+
+              return ListView.builder( //aqui vamos começar a construir a listview com// os itens retornados
+                  itemCount: documents.length,
+                  itemBuilder: (context, index) {
+
+                    //nao escolheu filtro por data e nao colocou nenhum parametro na busca
+                    if(tipoFiltro=="nao"){
+
+                      if(hasTotalAlready==false){
+                        hasTotalAlready=true;
+                        Future.delayed(const Duration(milliseconds: 1000), () {
+                          setState(() {
+                            total = ResumoVendasClass().calculeTotal(tipoFiltro, filter, documents, mesSelecionado, mesFinal); //ajusta o total na row no bottom da pagina
+                          });
+                        });
+                      }
+
+
+                      return filter == null || filter == "" ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+                          : Container();
+
+                    } else if(tipoFiltro=="mes"){
+
+                      return filter == null || filter == "" && documents[index].data['data'].contains(mesSelecionado)? GestureDetector(
+                        //pos 0
+                        //pos 1
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter) && documents[index].data['data'].contains(mesSelecionado) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      ) : Container();
+
+                    } else if(tipoFiltro=="duasDatas"){
+
+                      return filter == null || filter == "" && DateUtils().doesThisDateIsBigger(documents[index].data['data'], mesSelecionado ) && DateUtils().doesThisDateIsBigger(mesFinal, documents[index].data['data']) ? GestureDetector(
+                        //pos 0
+                        //pos 1
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter)  && DateUtils().doesThisDateIsBigger(documents[index].data['data'], mesSelecionado ) && DateUtils().doesThisDateIsBigger(mesFinal, documents[index].data['data']) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      ) : Container();
+
+                    } else {
+
+                      return Container();
+
+                    }
+
+                    //se nao tiver resultado exibe nada
+                  }
+              );
+
+            }
+          },
+        ) : StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance.collection("vendas").snapshots(),
+          //este é um listener para observar esta coleção
+          builder: (context, snapshot) { //começar a desenhar a tela
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+              case ConnectionState.none:
+                return Center( //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                  child: CircularProgressIndicator(),
+                );
+              default: documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+
+              return ListView.builder( //aqui vamos começar a construir a listview com// os itens retornados
+                  itemCount: documents.length,
+                  itemBuilder: (context, index) {
+
+                    //nao escolheu filtro por data e nao colocou nenhum parametro na busca
+                    if(tipoFiltro=="nao"){
+
+                      if(hasTotalAlready==false){
+                        hasTotalAlready=true;
+                        Future.delayed(const Duration(milliseconds: 1000), () {
+                          setState(() {
+                            total = ResumoVendasClass().calculeTotal(tipoFiltro, filter, documents, mesSelecionado, mesFinal); //ajusta o total na row no bottom da pagina
+                          });
+                        });
+                      }
+
+
+                      return filter == null || filter == "" ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+                          : Container();
+
+                    } else if(tipoFiltro=="mes"){
+
+                      return filter == null || filter == "" && documents[index].data['data'].contains(mesSelecionado)? GestureDetector(
+                        //pos 0
+                        //pos 1
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter) && documents[index].data['data'].contains(mesSelecionado) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      ) : Container();
+
+                    } else if(tipoFiltro=="duasDatas"){
+
+                      return filter == null || filter == "" && DateUtils().doesThisDateIsBigger(documents[index].data['data'], mesSelecionado ) && DateUtils().doesThisDateIsBigger(mesFinal, documents[index].data['data']) ? GestureDetector(
+                        //pos 0
+                        //pos 1
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      )
+
+                          : documents[index].data['cliente'].contains(filter)  && DateUtils().doesThisDateIsBigger(documents[index].data['data'], mesSelecionado ) && DateUtils().doesThisDateIsBigger(mesFinal, documents[index].data['data']) ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            //click no card da lista
+                            //page=1;
+
+                          });
+                        },
+                        child: listCard(index),
+                      ) : Container();
+
+                    } else {
+
+                      return Container();
+
+                    }
+
+                    //se nao tiver resultado exibe nada
+                  }
+              );
 
             }
           },

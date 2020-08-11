@@ -67,6 +67,7 @@ class SellClass {
 
           'datasPrestacoes' : datasPrestacoes,
           'situacoesPrestacoes' : situacaoPrestacoes,
+          'valorVenda' : venda.valor,
 
           'saldoDevedor' : (venda.valor-venda.entrada),
 

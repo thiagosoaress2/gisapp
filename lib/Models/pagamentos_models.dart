@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gisapp/Utils/percent_utils.dart';
 
 class PagamentosModels {
 
-  updatePagamentos(String id, double valorPago, double saldoDevedor, List<dynamic> situacaoPrestacoes){
+  updatePagamentos(String id, double valorPago, double saldoDevedor, List<dynamic> situacaoPrestacoes, double valorVenda){
 
     double newSaldoDevedor = saldoDevedor-valorPago;
 
@@ -19,7 +20,37 @@ class PagamentosModels {
       });
     }
 
+
+    //registro em comissoes liberadas
+    double payd = valorVenda-newSaldoDevedor;
+    double percentPayd = PercentUtils().percentFromTwoNumbers(payd, valorVenda);
+    if(percentPayd>10.0){
+
+      //aqui vamos criar a entrada da comissao no bd
+      /*
+      Firestore.instance.collection("dividas").add({
+
+          'vendaId' : value.documentID,
+          'vendedoraId' : venda.vendedoraId,
+          'parcelas' : venda.parcelas,
+          'clienteId' : venda.clienteId,
+          'cliente' : venda.cliente,
+
+          'datasPrestacoes' : datasPrestacoes,
+          'situacoesPrestacoes' : situacaoPrestacoes,
+          'valorVenda' : venda.valor,
+
+          'saldoDevedor' : (venda.valor-venda.entrada),
+
+          'nBoleto' : venda.nBoleto,
+
+        });
+       */
+
+    }
+
   }
+
 
   String checkPaymentsTotal(List<dynamic> list){
 

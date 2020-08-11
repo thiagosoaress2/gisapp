@@ -442,7 +442,8 @@ class _PagamentosPageState extends State<PagamentosPage> {
                       _displaySnackBar(context, "Informe o valor pago");
                     } else {
                       situacaoPrestacoes[positionOfData] = double.parse(_valorPagamento.text).toStringAsFixed(2);
-                      PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes);
+                      //vai registrar no bd e também criar a entrada do pagamento que libera a comissão
+                      PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes, documents[positionSelectedFromDocument].data['valorVenda']);
                       _displaySnackBar(context, "A atualização foi salva");
                       setState(() {
                         page=0;
@@ -459,6 +460,10 @@ class _PagamentosPageState extends State<PagamentosPage> {
         )
       ],
     );
+
+  }
+
+  void liberaComissao(){
 
   }
 
