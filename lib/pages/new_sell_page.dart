@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gisapp/Models/new_sell_model.dart';
 import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/classes/cliente_class.dart';
 import 'package:gisapp/classes/product_class.dart';
@@ -14,6 +15,8 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 //To do
 //quando adiciona um item ele repete o emsmo em todos os itens
 
+//To do - impedir o botão de ser clicado duas vezes seguidas (para n criar duas entradas no bd)
+
 class NewSellPage extends StatefulWidget {
   @override
   _NewSellState createState() => _NewSellState();
@@ -21,17 +24,21 @@ class NewSellPage extends StatefulWidget {
 
 class _NewSellState extends State<NewSellPage> {
 
-  bool _isUploading = false;
+  //bool _isUploading = false;
 
-  bool _showProducts = false;
+  //bool _showProducts = false;
 
-  bool _showClients = false;
+  //bool _showClients = false;
 
-  bool _showVendors = false;
+  //bool _showVendors = false;
 
-  bool _isRegisteredClient = false;
+  //bool _isRegisteredClient = false;
 
   //ProductClass _produto = ProductClass.toSellProduct("nao", "nao", "nao", 0.0, "nao");
+
+
+  NewSellModel _newSellModel = NewSellModel();
+
 
   VendorClass _vendedora = VendorClass(null, null, null, null, null);
 
@@ -42,7 +49,7 @@ class _NewSellState extends State<NewSellPage> {
   double _valorEntradaVariable = 0.0;
 
   var _maskFormatterDataVenda = new MaskTextInputFormatter(mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
-  final TextEditingController _dataVendaController = TextEditingController();
+  //final TextEditingController _dataVendaController = TextEditingController();
 
   final TextEditingController _quantidadeParcelamentos = TextEditingController();
   final TextEditingController _valorEntrada = TextEditingController();
@@ -66,6 +73,7 @@ class _NewSellState extends State<NewSellPage> {
         filter = _searchController.text;
       });
     });
+
 
     _valorEntrada.addListener(() {
       setState(() {
@@ -112,10 +120,14 @@ class _NewSellState extends State<NewSellPage> {
                       backgroundColor: Theme.of(context).primaryColor,
                       onPressed: (){
                         setState(() {
-                          //produto.pId="troca";
-                          _showProducts = true;
+
+                          //_showProducts = true;
+                          _newSellModel.setPage("product");
+
 
                           //colocar a data de hoje no editfield para facilitar
+                          _newSellModel.updateDataVenda(formatDate(DateTime.now(), [dd, '/', mm, '/', yyyy]));
+                          
                           _dataVendaController.text = formatDate(DateTime.now(), [dd, '/', mm, '/', yyyy]);
                           _quantidadeParcelamentos.text = "1";
                         });
@@ -589,7 +601,6 @@ class _NewSellState extends State<NewSellPage> {
 
                   ],
                 ),
-
                 SizedBox(height: 16.0,),
                 Container(
                   decoration: BoxDecoration(border: Border.all(color: Theme.of(context).primaryColor), borderRadius: BorderRadius.circular(10.0)),
@@ -654,6 +665,7 @@ class _NewSellState extends State<NewSellPage> {
                     color: Theme.of(context).primaryColor,
                     child: WidgetsConstructor().makeSimpleText("Registrar venda", Colors.white, 20.0),
                     onPressed: () async {
+                      print(_nBoletoController.text);
                       //registrar venda
                       if (_formKey.currentState.validate()) { //
                         if(_produtosCarrinho.length!=0){

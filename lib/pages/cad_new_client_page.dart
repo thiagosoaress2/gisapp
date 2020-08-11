@@ -39,7 +39,7 @@ class _CadNewClientState extends State<CadNewClientPage> {
               color: Theme.of(context).primaryColor,
               height: 45.0,
               child: RaisedButton(
-               child: WidgetsConstructor().makeSimpleText("teste", Colors.white, 18.0),
+               child: WidgetsConstructor().makeSimpleText("Adicionar", Colors.white, 18.0),
                 color: Colors.transparent,
                 onPressed: () async {
                     //save data to bd

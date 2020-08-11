@@ -14,6 +14,7 @@ class VendedorasPage extends StatefulWidget {
 }
 
 class _VendedorasPageState extends State<VendedorasPage> {
+
   bool landPageVisible = true;
   bool infoPageVisible = false;
   bool addPageVisible = false;
@@ -42,6 +43,8 @@ class _VendedorasPageState extends State<VendedorasPage> {
   int modalidade=0;
   // 1 - salario+comissao
   // 2 - comissao apenas se for maior que o salário
+  // 3 - apenas comissão
+  // 4 - comissao liberada direto sempre
 
   @override
   Widget build(BuildContext context) {
@@ -400,79 +403,75 @@ class _VendedorasPageState extends State<VendedorasPage> {
   Widget _popup_salario_comissao_update() {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: ListView(
-            children: <Widget>[
+      body: ListView(
+        children: <Widget>[
 
-              Container(
-                height: 500.0,
-                width: 400.0,
-                color: Colors.white,
-                child: Column(
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        Container(
-                          width: 50.0,
-                          height: 50.0,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: Colors.redAccent,
-                              size: 30.0,
-                            ),
-                            color: Theme.of(context).primaryColor,
-                            onPressed: () {
-                              setState(() {
-                                showUpdateScreenPopup = false;
-                              });
-                            },
-                          ),
-                        ), //btn fechar
-                      ],
-                ),
-                    WidgetsConstructor().makeText("Edição de informações", Theme.of(context).primaryColor, 20.0, 16.0, 8.0, "center"),
-                    SizedBox(height: 8.0,),
-                    TextField(
-                      controller: _infos_comissaoController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.end,
-                      decoration: InputDecoration(labelText: "Nova comissão"),
-                    ),
-                    SizedBox(height: 8.0,),
-                    CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_infos_salarioController, "Novo salário"),
-                    SizedBox(height: 8.0,),
-                    WidgetsConstructor().makeSimpleText("Modalidade", Theme.of(context).primaryColor, 16.0),
-                    SizedBox(height: 8.0,),
-                    buildRadioOptions(context),  //radios buttons
                     Container(
-                      color: Theme.of(context).primaryColor,
+                      width: 50.0,
                       height: 50.0,
-                      child: FlatButton(
-                        child: WidgetsConstructor().makeSimpleText("Salvar alterações", Colors.white, 18.0),
-                        onPressed: (){
-                          vendedora.comissao = double.parse(_infos_comissaoController.text);
-                          vendedora.salario = double.parse(_infos_salarioController.text);
-                          VendorClass.empty().updateClienteInfo(vendedora);
-                          _displaySnackBar(context, "As informações foram salvas!");
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.redAccent,
+                          size: 30.0,
+                        ),
+                        color: Theme.of(context).primaryColor,
+                        onPressed: () {
                           setState(() {
                             showUpdateScreenPopup = false;
                           });
                         },
-
-                      )
-                    )
-
+                      ),
+                    ), //btn fechar
                   ],
                 ),
-              ),
+                WidgetsConstructor().makeText("Edição de informações", Theme.of(context).primaryColor, 20.0, 16.0, 8.0, "center"),
+                SizedBox(height: 8.0,),
+                TextField(
+                  controller: _infos_comissaoController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.end,
+                  decoration: InputDecoration(labelText: "Nova comissão"),
+                ),
+                SizedBox(height: 8.0,),
+                CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_infos_salarioController, "Novo salário"),
+                SizedBox(height: 8.0,),
+                WidgetsConstructor().makeSimpleText("Modalidade", Theme.of(context).primaryColor, 16.0),
+                SizedBox(height: 8.0,),
+                buildRadioOptions(context),  //radios buttons
+                SizedBox(height: 20.0,),
+                Container(
+                    color: Theme.of(context).primaryColor,
+                    height: 50.0,
+                    child: FlatButton(
+                      child: WidgetsConstructor().makeSimpleText("Salvar alterações", Colors.white, 18.0),
+                      onPressed: (){
+                        vendedora.comissao = double.parse(_infos_comissaoController.text);
+                        vendedora.salario = double.parse(_infos_salarioController.text);
+                        VendorClass.empty().updateClienteInfo(vendedora);
+                        _displaySnackBar(context, "As informações foram salvas!");
+                        setState(() {
+                          showUpdateScreenPopup = false;
+                        });
+                      },
 
-            ],
-          ),
-        )
+                    )
+                ),
+                SizedBox(height: 20.0,),
+
+              ],
+            ),
+          )
+
+
+        ],
       ),
     );
   }
@@ -486,6 +485,171 @@ class _VendedorasPageState extends State<VendedorasPage> {
     print(vendedora.salario.toStringAsFixed(2));
   }
 
+  Widget _calculosPage(){
+
+    String queryCriteria = "esteMes";
+
+    return Container(
+      height: 700.0,
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                width: 50.0,
+                height: 50.0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.redAccent,
+                    size: 30.0,
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    setState(() {
+                      infoPageVisible = true;
+                      extratoPageVisible = false;
+                    });
+                  },
+                ),
+              ), //btn fechar
+            ],
+          ),
+          //Container(color: Colors.amber, height: 500.0,)
+          Container(
+            height: 500,
+            color: Colors.white,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 4.0,),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.amber,
+                        child: FlatButton(
+                          child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
+                          onPressed: (){
+                            setState(() {
+                              queryCriteria = "esteMes";
+                            });
+
+                          },
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                    Flexible(
+                      flex: 1,
+                      child: Container(
+                        height: 50.0,
+                        color: Colors.amber,
+                      ),
+                    ),
+                    SizedBox(width: 4.0,),
+                  ],
+                ),
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                    //vou precisar criar o campo dataQueryVendor e colocar data+id
+                        .collection("comissaoLiberada").where("vendedoraId", isEqualTo: vendedora.id)
+                        .snapshots(), //este é um listener para observar esta coleção
+                    builder: (context, snapshot) {
+                      //começar a desenhar a tela
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return Center(
+                            //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                            child: CircularProgressIndicator(),
+                          );
+                        default:
+                          List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+                          List<DocumentSnapshot> documentThisMonth = documents;
+                          documentThisMonth.forEach((element) {
+                            element["data"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+                          });
+
+                          return ListView.builder(
+                            //aqui vamos começar a construir a listview com os itens retornados
+                              itemCount: documentThisMonth.length,
+                              itemBuilder: (context, index) {
+                                if(queryCriteria=="esteMes"){
+                                  print("entrou no if");
+                                  print(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+                                  print(documents[index].data['dataQuery'].toString());
+                                  return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
+                                      ?  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+
+
+                                        //exibir os detalhes desta venda
+
+                                      });
+                                    },
+                                    child: Card(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              WidgetsConstructor().makeText(documents[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                              WidgetsConstructor().makeSimpleText(documents[index].data["data"], Colors.blueGrey[300], 15.0),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: <Widget>[
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                    children: <Widget>[
+                                                      //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                                      WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+
+                                                      //adicionar aqui o valor já pago
+                                                      //criar uma área de pagamentos
+                                                      //la o usuario vai poder adicionar os pagamentos feitos
+
+                                                    ],
+                                                  ),
+
+                                                ],
+                                              ),
+
+                                            ],
+                                          ),
+                                        )
+                                    ),
+                                  ) : Container(color: Colors.red,);
+                                } else {
+                                  //aqui ficarão os outros filtros
+                                  return Container(color: Colors.red,);
+                                }
+
+                              });
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /*
   Widget _calculosPage(){
 
     String queryCriteria = "esteMes";
@@ -650,6 +814,8 @@ class _VendedorasPageState extends State<VendedorasPage> {
     );
   }
 
+   */
+
   Widget buildRadioOptions(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -665,6 +831,24 @@ class _VendedorasPageState extends State<VendedorasPage> {
 
           description: "Comissão se maior que salário",
           value: 2,
+          groupValue: modalidade,
+          onChanged: (value) => setState(
+                () => modalidade = value,
+          ),
+        ),
+        RadioButton(
+
+          description: "Apenas comissão",
+          value: 3,
+          groupValue: modalidade,
+          onChanged: (value) => setState(
+                () => modalidade = value,
+          ),
+        ),
+        RadioButton(
+
+          description: "Comissão liberada direto",
+          value: 4,
           groupValue: modalidade,
           onChanged: (value) => setState(
                 () => modalidade = value,

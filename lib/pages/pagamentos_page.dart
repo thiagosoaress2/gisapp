@@ -98,6 +98,18 @@ class _PagamentosPageState extends State<PagamentosPage> {
                         borderRadius: BorderRadius.all(Radius.circular(10.0)))),
               ),
             ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextField( //searchcontroller
+                controller: _searchController,
+                decoration: InputDecoration(
+                    labelText: "Buscar",
+                    hintText: "Buscar",
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)))),
+              ),
+            ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: Firestore.instance.collection("dividas").snapshots(),
@@ -443,7 +455,8 @@ class _PagamentosPageState extends State<PagamentosPage> {
                     } else {
                       situacaoPrestacoes[positionOfData] = double.parse(_valorPagamento.text).toStringAsFixed(2);
                       //vai registrar no bd e também criar a entrada do pagamento que libera a comissão
-                      PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'], situacaoPrestacoes, documents[positionSelectedFromDocument].data['valorVenda']);
+                      PagamentosModels().updatePagamentos(documents[positionSelectedFromDocument].documentID, valorPagamento, documents[positionSelectedFromDocument].data['saldoDevedor'],
+                          situacaoPrestacoes, documents[positionSelectedFromDocument].data['valorVenda'], documents[positionSelectedFromDocument].data['vendedoraId'], documents[positionSelectedFromDocument].data['clienteId'], documents[positionSelectedFromDocument].data['cliente']);
                       _displaySnackBar(context, "A atualização foi salva");
                       setState(() {
                         page=0;

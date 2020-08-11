@@ -68,4 +68,9 @@ class DateUtils {
     return date.month.toString();
   }
 
+  String giveMeTheDateToday(){
+    var today = DateTime.now();
+    return convertStringFromDate(today);
+  }
+
 }

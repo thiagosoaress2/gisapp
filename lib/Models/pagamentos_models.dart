@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gisapp/Utils/dates_utils.dart';
 import 'package:gisapp/Utils/percent_utils.dart';
 
 class PagamentosModels {
 
-  updatePagamentos(String id, double valorPago, double saldoDevedor, List<dynamic> situacaoPrestacoes, double valorVenda){
+  updatePagamentos(String id, double valorPago, double saldoDevedor, List<dynamic> situacaoPrestacoes, double valorVenda, String vendedoraId
+      , String clienteId, String cliente){
 
     double newSaldoDevedor = saldoDevedor-valorPago;
 
@@ -24,28 +26,21 @@ class PagamentosModels {
     //registro em comissoes liberadas
     double payd = valorVenda-newSaldoDevedor;
     double percentPayd = PercentUtils().percentFromTwoNumbers(payd, valorVenda);
-    if(percentPayd>10.0){
+    if(percentPayd>=10.0){
+
+      double comissao = PercentUtils().getValueFromPercent(valorPago, 4.0); //esses 4.0 vao vir da classe vendedora
 
       //aqui vamos criar a entrada da comissao no bd
-      /*
-      Firestore.instance.collection("dividas").add({
-
-          'vendaId' : value.documentID,
-          'vendedoraId' : venda.vendedoraId,
-          'parcelas' : venda.parcelas,
-          'clienteId' : venda.clienteId,
-          'cliente' : venda.cliente,
-
-          'datasPrestacoes' : datasPrestacoes,
-          'situacoesPrestacoes' : situacaoPrestacoes,
-          'valorVenda' : venda.valor,
-
-          'saldoDevedor' : (venda.valor-venda.entrada),
-
-          'nBoleto' : venda.nBoleto,
+      Firestore.instance.collection("comissaoLiberada").add({
+          'vendaId' : id,
+          'vendedoraId' : vendedoraId,
+          'clienteId' : clienteId,
+          'data' : DateUtils().giveMeTheDateToday(),
+          'comissao' : comissao,
+        'cliente' : cliente,
 
         });
-       */
+
 
     }
 
