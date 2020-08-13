@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:gisapp/pages/new_sell_page.dart';
 import 'package:mobx/mobx.dart';
 
 part 'new_sell_model.g.dart';
@@ -24,21 +24,32 @@ abstract class _NewSellModel with Store {
   //as paginas serão:
   //land - pagina principal
   //product - pagina que exibe os produtos para escolher
-
-  @observable
-  final TextEditingController _dataVendaController = TextEditingController();
+  //client - pagina para selecionar o cliente
+  //vendors - selecionar vendedor
 
   @action
-  void updateDataVenda(String data){
-    _dataVendaController.text = data;
+  void setPage(String newPage){
+    page = newPage;
   }
 
   @observable
   double valorEntradaVariable = 0.0;
 
+
+  @observable
+  double totalVenda=0.00;
+
   @action
-  void setPage(String newPage){
-    page = newPage;
+  void updateTotalVenda (double newTotal){
+    totalVenda = newTotal;
+  }
+
+  @observable
+  bool isUploading = false;
+
+  @action
+  void updateIsUploading (){
+    isUploading = !isUploading;
   }
 
 }

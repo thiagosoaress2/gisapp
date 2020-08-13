@@ -98,18 +98,7 @@ class _PagamentosPageState extends State<PagamentosPage> {
                         borderRadius: BorderRadius.all(Radius.circular(10.0)))),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField( //searchcontroller
-                controller: _searchController,
-                decoration: InputDecoration(
-                    labelText: "Buscar",
-                    hintText: "Buscar",
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)))),
-              ),
-            ),
+
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: Firestore.instance.collection("dividas").snapshots(),

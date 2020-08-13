@@ -37,7 +37,8 @@ class PagamentosModels {
           'clienteId' : clienteId,
           'data' : DateUtils().giveMeTheDateToday(),
           'comissao' : comissao,
-        'cliente' : cliente,
+          'cliente' : cliente,
+          'valor' : valorPago,
 
         });
 

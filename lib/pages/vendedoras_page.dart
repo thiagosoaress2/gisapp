@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:gisapp/Models/vendedoras_model.dart';
 import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/classes/vendor_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
+import 'package:mobx/mobx.dart';
 
 class VendedorasPage extends StatefulWidget {
   @override
@@ -14,6 +17,8 @@ class VendedorasPage extends StatefulWidget {
 }
 
 class _VendedorasPageState extends State<VendedorasPage> {
+
+  VendedorasModel _vendedorasModel = VendedorasModel();
 
   bool landPageVisible = true;
   bool infoPageVisible = false;
@@ -46,6 +51,10 @@ class _VendedorasPageState extends State<VendedorasPage> {
   // 3 - apenas comissão
   // 4 - comissao liberada direto sempre
 
+  double totalParaExibir = 0.00;
+
+  List<DocumentSnapshot> documentsCopy = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,16 +82,17 @@ class _VendedorasPageState extends State<VendedorasPage> {
               .makeSimpleText("Página das vendedoras", Colors.white, 15.0),
           centerTitle: true,
         ),
-        body: landPageVisible
+        body:landPageVisible
             ? _landingPage()
             : addPageVisible
-                ? _addVendor()
-                : infoPageVisible
-                    ? _infos()
-                  : extratoPageVisible
-                      ? _calculosPage()
-                    : Container(height: 0.0, width: 0.0,
-                      ));
+            ? _addVendor()
+            : infoPageVisible
+            ? _infos()
+            : extratoPageVisible
+            ?  _calculosPage()
+            : Container(height: 0.0, width: 0.0,),
+    );
+
   }
 
   Widget _landingPage() {
@@ -379,10 +389,9 @@ class _VendedorasPageState extends State<VendedorasPage> {
                         child: WidgetsConstructor().makeSimpleText("Calcular comissão", Colors.white, 18.0),
                         onPressed: (){
                           setState(() {
-                            setState(() {
-                              extratoPageVisible=true;
-                              infoPageVisible=false;
-                            });
+                            extratoPageVisible=true;
+                            //totalParaExibir=0.00; //zerar para exibir com precisão
+                            infoPageVisible=false;
 
                           });
 
@@ -488,6 +497,9 @@ class _VendedorasPageState extends State<VendedorasPage> {
   Widget _calculosPage(){
 
     String queryCriteria = "esteMes";
+    //_placeValueInTotalInRightTime();
+    //_updateTotalInRightTime();
+
 
     return Container(
       height: 700.0,
@@ -519,302 +531,225 @@ class _VendedorasPageState extends State<VendedorasPage> {
           ),
           //Container(color: Colors.amber, height: 500.0,)
           Container(
-            height: 500,
-            color: Colors.white,
-            child: Column(
+        height: 500,
+        color: Colors.white,
+        child: Column(
+          children: <Widget>[
+            Row(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox(width: 4.0,),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.amber,
-                        child: FlatButton(
-                          child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
-                          onPressed: (){
-                            setState(() {
-                              queryCriteria = "esteMes";
-                            });
+                SizedBox(width: 4.0,),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: Colors.amber,
+                    child: FlatButton(
+                      child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
+                      onPressed: (){
+                        setState(() {
+                          queryCriteria = "esteMes";
+                        });
 
-                          },
-                        ),
-                      ),
+                      },
                     ),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.amber,
-                      ),
-                    ),
-                    SizedBox(width: 4.0,),
-                  ],
+                  ),
                 ),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: Firestore.instance
-                    //vou precisar criar o campo dataQueryVendor e colocar data+id
-                        .collection("comissaoLiberada").where("vendedoraId", isEqualTo: vendedora.id)
-                        .snapshots(), //este é um listener para observar esta coleção
-                    builder: (context, snapshot) {
-                      //começar a desenhar a tela
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                        case ConnectionState.none:
-                          return Center(
-                            //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
-                            child: CircularProgressIndicator(),
-                          );
-                        default:
-                          List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
-                          List<DocumentSnapshot> documentThisMonth = documents;
-                          documentThisMonth.forEach((element) {
-                            element["data"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
-                          });
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: Colors.amber,
+                  ),
+                ),
+                SizedBox(width: 4.0,),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance
+                //vou precisar criar o campo dataQueryVendor e colocar data+id
+                    .collection("comissaoLiberada").where("vendedoraId", isEqualTo: vendedora.id)
+                    .snapshots(), //este é um listener para observar esta coleção
+                builder: (context, snapshot) {
+                  //começar a desenhar a tela
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                    case ConnectionState.none:
+                      return Center(
+                        //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                        child: CircularProgressIndicator(),
+                      );
+                    default:
+                      List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+                      //List<DocumentSnapshot> documentThisMonth = documents;
+                      documentsCopy = documents;
 
-                          return ListView.builder(
-                            //aqui vamos começar a construir a listview com os itens retornados
-                              itemCount: documentThisMonth.length,
-                              itemBuilder: (context, index) {
-                                if(queryCriteria=="esteMes"){
-                                  print("entrou no if");
-                                  print(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
-                                  print(documents[index].data['dataQuery'].toString());
-                                  return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
-                                      ?  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
+                      //_vendedorasModel.updateTotalVendas(0.00);
+                      documentsCopy.forEach((element) {
+                        element["data"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+
+                      });
+
+                      //updateTotal();
 
 
-                                        //exibir os detalhes desta venda
+                      return ListView.builder(
+                        //aqui vamos começar a construir a listview com os itens retornados
+                          itemCount: documentsCopy.length,
+                          itemBuilder: (context, index) {
+                            //updateTotal();
+                            if(queryCriteria=="esteMes"){
+                              print("entrou no if");
 
-                                      });
-                                    },
-                                    child: Card(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                              print(documentsCopy.length);
+                              print(index);
+
+                              if(index==documentsCopy.length-1){
+
+                                /*
+                                documentsCopy.forEach((element) {
+                                  if(element['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())){
+                                    _vendedorasModel.updateTotalVendas(element['comissao']);
+
+                                  }
+                                });
+
+                                 */
+                                updateTotal();
+
+                              }
+
+                              return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
+                                  ? GestureDetector(
+                                onTap: () {
+
+                                  //faça algo
+
+                                },
+                                child: Card(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          WidgetsConstructor().makeText(documentsCopy[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                          WidgetsConstructor().makeSimpleText(documentsCopy[index].data["data"], Colors.blueGrey[300], 15.0),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
                                             children: <Widget>[
-                                              WidgetsConstructor().makeText(documents[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
-                                              WidgetsConstructor().makeSimpleText(documents[index].data["data"], Colors.blueGrey[300], 15.0),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.end,
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: <Widget>[
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
-                                                      WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+                                                  //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                                  WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Colors.grey, 15.0),
+                                                  WidgetsConstructor().makeSimpleText("Comissão devida: "+documents[index].data["comissao"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
 
-                                                      //adicionar aqui o valor já pago
-                                                      //criar uma área de pagamentos
-                                                      //la o usuario vai poder adicionar os pagamentos feitos
-
-                                                    ],
-                                                  ),
+                                                  //adicionar aqui o valor já pago
+                                                  //criar uma área de pagamentos
+                                                  //la o usuario vai poder adicionar os pagamentos feitos
 
                                                 ],
                                               ),
 
                                             ],
                                           ),
-                                        )
-                                    ),
-                                  ) : Container(color: Colors.red,);
-                                } else {
-                                  //aqui ficarão os outros filtros
-                                  return Container(color: Colors.red,);
-                                }
 
-                              });
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                                        ],
+                                      ),
+                                    )
+                                ),
+                              ) : Container(color: Colors.red,);
+                            } else {
+                              //aqui ficarão os outros filtros
+                              return Container(color: Colors.red,);
+                            }
 
-  /*
-  Widget _calculosPage(){
-
-    String queryCriteria = "esteMes";
-
-    return Container(
-      height: 700.0,
-      color: Colors.white,
-      child: Column(
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Container(
-                width: 50.0,
-                height: 50.0,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.redAccent,
-                    size: 30.0,
-                  ),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () {
-                    setState(() {
-                      infoPageVisible = true;
-                      extratoPageVisible = false;
-                    });
-                  },
-                ),
-              ), //btn fechar
-            ],
-          ),
-          //Container(color: Colors.amber, height: 500.0,)
-          Container(
-            height: 500,
-            color: Colors.white,
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox(width: 4.0,),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.amber,
-                        child: FlatButton(
-                          child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
-                          onPressed: (){
-                            setState(() {
-                              queryCriteria = "esteMes";
-                            });
-
-                          },
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        height: 50.0,
-                        color: Colors.amber,
-                      ),
-                    ),
-                    SizedBox(width: 4.0,),
-                  ],
-                ),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: Firestore.instance
-                    //vou precisar criar o campo dataQueryVendor e colocar data+id
-                        .collection("vendas").where("vendedoraId", isEqualTo: vendedora.id)
-                        .snapshots(), //este é um listener para observar esta coleção
-                    builder: (context, snapshot) {
-                      //começar a desenhar a tela
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                        case ConnectionState.none:
-                          return Center(
-                            //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
-                            child: CircularProgressIndicator(),
-                          );
-                        default:
-                          List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
-                          List<DocumentSnapshot> documentThisMonth = documents;
-                          documentThisMonth.forEach((element) { 
-                            element["dataQuery"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
                           });
-
-                          return ListView.builder(
-                            //aqui vamos começar a construir a listview com os itens retornados
-                              itemCount: documentThisMonth.length,
-                              itemBuilder: (context, index) {
-                                if(queryCriteria=="esteMes"){
-                                  print("entrou no if");
-                                  print(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
-                                  print(documents[index].data['dataQuery'].toString());
-                                  return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
-                                      ?  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-
-
-                                        //exibir os detalhes desta venda
-
-                                      });
-                                    },
-                                    child: Card(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              WidgetsConstructor().makeText(documents[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
-                                              WidgetsConstructor().makeSimpleText(documents[index].data["data"], Colors.blueGrey[300], 15.0),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                children: <Widget>[
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
-                                                      WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
-
-                                                      //adicionar aqui o valor já pago
-                                                      //criar uma área de pagamentos
-                                                      //la o usuario vai poder adicionar os pagamentos feitos
-
-                                                    ],
-                                                  ),
-
-                                                ],
-                                              ),
-
-                                            ],
-                                          ),
-                                        )
-                                    ),
-                                  ) : Container(color: Colors.red,);
-                                } else {
-                                  //aqui ficarão os outros filtros
-                                  return Container(color: Colors.red,);
-                                }
-
-                              });
-                      }
-                    },
+                  }
+                },
+              ),
+            ),
+            Observer(
+              builder: (_){
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 4.0),
+                  child: Container(
+                    height: 40.0,
+                    decoration: WidgetsConstructor().myBoxDecoration(Theme.of(context).primaryColor, 2.0, 5.0),
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          WidgetsConstructor().makeSimpleText("Total: ", Colors.grey, 16.0),
+                          //WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
+                          WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ],
+              );
+              },
             ),
-          ),
+
+          ],
+        ),
+      ),
         ],
       ),
     );
+
+
   }
 
-   */
+  void updateTotal() async {
+
+    _vendedorasModel.totalVendas=0.00;
+    _vendedorasModel.updateTotalVendas(0.00);
+
+    double provi=0.00;
+
+    await documentsCopy.forEach((element) {
+      //_vendedorasModel.updateTotalVendas(element['comissao']);
+      provi = element['comissao']+provi;
+    });
+
+    _vendedorasModel.updateTotalVendas(provi);
+  }
+
+  void _updateTotalInRightTime(){
+
+    Future.delayed(const Duration(milliseconds: 2000), () {
+        //updateTotal();
+      updateTotalDoMes();
+    });
+
+  }
+
+  void updateTotalDoMes(){
+
+    documentsCopy.forEach((element) {
+      if(element['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())){
+        _vendedorasModel.updateTotalVendas(element['comissao']);
+
+      }
+    });
+
+
+
+  }
+
+
 
   Widget buildRadioOptions(BuildContext context) {
     return Column(
