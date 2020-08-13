@@ -622,7 +622,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
                                 });
 
                                  */
-                                updateTotal();
+                                _updateTotalInRightTime();
 
                               }
 
@@ -676,31 +676,30 @@ class _VendedorasPageState extends State<VendedorasPage> {
                 },
               ),
             ),
-            Observer(
-              builder: (_){
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 4.0),
-                  child: Container(
-                    height: 40.0,
-                    decoration: WidgetsConstructor().myBoxDecoration(Theme.of(context).primaryColor, 2.0, 5.0),
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          WidgetsConstructor().makeSimpleText("Total: ", Colors.grey, 16.0),
-                          //WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
-                          WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
-                        ],
-                      ),
-                    ),
+            Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 4.0),
+          child: Container(
+            height: 40.0,
+            decoration: WidgetsConstructor().myBoxDecoration(Theme.of(context).primaryColor, 2.0, 5.0),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  WidgetsConstructor().makeSimpleText("Total: ", Colors.grey, 16.0),
+                  //WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
+                  Observer(
+                    builder: (_) => WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
                   ),
-                ),
-              );
-              },
+
+                ],
+              ),
             ),
+          ),
+        ),
+      ),
 
           ],
         ),
@@ -712,14 +711,14 @@ class _VendedorasPageState extends State<VendedorasPage> {
 
   }
 
-  void updateTotal() async {
+  void updateTotal() {
 
     _vendedorasModel.totalVendas=0.00;
     _vendedorasModel.updateTotalVendas(0.00);
 
     double provi=0.00;
 
-    await documentsCopy.forEach((element) {
+    documentsCopy.forEach((element) {
       //_vendedorasModel.updateTotalVendas(element['comissao']);
       provi = element['comissao']+provi;
     });

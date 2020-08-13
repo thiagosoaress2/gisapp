@@ -465,10 +465,6 @@ class _PagamentosPageState extends State<PagamentosPage> {
 
   }
 
-  void liberaComissao(){
-
-  }
-
 
 
   _displaySnackBar(BuildContext context, String msg) {
