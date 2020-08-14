@@ -625,27 +625,6 @@ class _NewSellState extends State<NewSellPage> {
                       ),
                     ),
                     SizedBox(height: 16.0,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          width: 240.0,
-                          child: CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_totalVendaController, "Total da venda"),
-                        ),
-                        SizedBox(width: 5.0,),
-                        Container(
-                          color: Theme.of(context).primaryColor,
-                          height: 50.0,
-                          width: 50.0,
-                          child: IconButton(
-                            icon: Icon(Icons.refresh, color: Colors.white,),
-                            onPressed: (){
-                              _placeValueInTotalInRightTime();
-                            },
-                          ),
-                        ),
-                      ],
-                    ), //Linha do total da venda com o botão pra atualizar
                     WidgetsConstructor().makeFormEditTextForDateFormat(_dataVendaController, "Data da venda", _maskFormatterDataVenda, "Informe a data"),
                     SizedBox(height: 16.0,),
                     Row(
@@ -748,6 +727,27 @@ class _NewSellState extends State<NewSellPage> {
                       child: WidgetsConstructor().makeFormEditTextNumberOnly(_nBoletoController, "Número boleto", "Innforme o número do boleto"),
                     ),
                     SizedBox(height: 30.0,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          width: 240.0,
+                          child: CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_totalVendaController, "Total da venda"),
+                        ),
+                        SizedBox(width: 5.0,),
+                        Container(
+                          color: Theme.of(context).primaryColor,
+                          height: 50.0,
+                          width: 50.0,
+                          child: IconButton(
+                            icon: Icon(Icons.refresh, color: Colors.white,),
+                            onPressed: (){
+                              _placeValueInTotalInRightTime();
+                            },
+                          ),
+                        ),
+                      ],
+                    ), //Linha do total da venda com o botão pra atualizar
                     Container(
                       height: 60.0,
                       color: Theme.of(context).primaryColor,
@@ -778,9 +778,15 @@ class _NewSellState extends State<NewSellPage> {
                                 });
                                  */
 
+                                    print("Valor entrada variable: "+_valorEntradaVariable.toStringAsFixed(2));
+                                    print("Valor entrada text"+_valorEntrada.text);
+                                    double teste = double.parse(_valorEntrada.text);
+                                    print(teste);
                                     //vamos preencher o objeto venda
-                                    SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, _newSellModel.totalVenda, _nBoletoController.text);
-                                    //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), formaPgto, _nomeCliente.text, isRegisteredClient ? cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentos.text==null ? 1 : int.parse(_quantidadeParcelamentos.text), double.parse(_totalVenda.text), vendedora.nome, vendedora.id, produtosIdCarrinho);
+                                    //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, _newSellModel.totalVenda, _nBoletoController.text);
+                                    SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, double.parse(_valorEntrada.text), _newSellModel.totalVenda, _nBoletoController.text, double.parse(_valorEntrada.text));
+                                    //obs: Valor pago no ato da venda é a entradda. Quando for registrar um pagamento de parcela o valor pago será informado pelo usuario
+
 
                                     SellClass.empty().addToBd(venda);
 

@@ -1,6 +1,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
+import 'package:gisapp/Models/pagamentos_models.dart';
+import 'package:gisapp/Models/vendedoras_model.dart';
 import 'package:gisapp/classes/product_class.dart';
 import 'package:intl/intl.dart';
 
@@ -20,11 +22,12 @@ class SellClass {
   double totalSemDesconto;
   String nBoleto; //vai ser sempre numero mas vamos registrar como string pois sao numeros longos
   List<ProductClass> produtos;
+  double valorPago;
   //List<String> produtos;
 
   List<String> listOfProdutosId;
 
-  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada, this.totalSemDesconto, this.nBoleto);
+  SellClass(this.data, this.dataQuery, this.formaPgto, this.cliente, this.clienteId,  this.parcelas, this.valor, this.vendedora, this.vendedoraId, this.produtos, this.entrada, this.totalSemDesconto, this.nBoleto, this.valorPago);
 
   SellClass.empty();
 
@@ -52,7 +55,15 @@ class SellClass {
 
     }).then((value) {
 
-      if(venda.parcelas!=1){
+      if(venda.formaPgto=="avista"){
+        //liberar apenas a comissão
+        PagamentosModels().updateComissaoLiberada(value.documentID, venda.valor, 0.00, null, venda.valor, venda.vendedoraId, venda.clienteId, venda.cliente, 0.00);
+
+      } else if(venda.valor-venda.entrada == 0.0){
+        //nao tem saldo devedor e pagou a divida
+        PagamentosModels().updateComissaoLiberada(value.documentID, venda.valor, 0.00, null, venda.valor, venda.vendedoraId, venda.clienteId, venda.cliente, 0.00);
+
+      } else {
 
         List<String> datasPrestacoes = _getPrestacoes(venda.parcelas, venda.data, venda);
         List<String> situacaoPrestacoes = _getSituacaoPrestacoes(datasPrestacoes);
@@ -64,7 +75,6 @@ class SellClass {
           'parcelas' : venda.parcelas,
           'clienteId' : venda.clienteId,
           'cliente' : venda.cliente,
-
           'datasPrestacoes' : datasPrestacoes,
           'situacoesPrestacoes' : situacaoPrestacoes,
           'valorVenda' : venda.valor,
@@ -73,7 +83,14 @@ class SellClass {
 
           'nBoleto' : venda.nBoleto,
 
-        });
+        }
+        );
+
+        double newSaldoDevedor = venda.valor- venda.entrada;
+
+
+      //o erro ta aqui. venda.valor (2 item) deveria ser o valor pago nao o valortotal pra liberar a comissao somente do que foi pago
+        PagamentosModels().updateComissaoLiberada(value.documentID, venda.valorPago, 0.00, null, venda.valor, venda.vendedoraId, venda.clienteId, venda.cliente, newSaldoDevedor);
 
       }
 

@@ -9,6 +9,7 @@ import 'package:gisapp/Utils/currency_edittext_builder.dart';
 import 'package:gisapp/classes/vendor_class.dart';
 import 'package:gisapp/widgets/widgets_constructor.dart';
 import 'package:group_radio_button/group_radio_button.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:mobx/mobx.dart';
 
 class VendedorasPage extends StatefulWidget {
@@ -24,6 +25,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
   bool infoPageVisible = false;
   bool addPageVisible = false;
   bool extratoPageVisible = false;
+  bool popUpInformeData = false;
 
   bool showUpdateScreenPopup = false;  //exibe o popup pra atualizar o salario e comissão em infoScreen
 
@@ -36,6 +38,8 @@ class _VendedorasPageState extends State<VendedorasPage> {
       TextEditingController();
   final TextEditingController _infos_salarioController =
       TextEditingController();
+
+  final TextEditingController _dateController = TextEditingController();
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -54,6 +58,11 @@ class _VendedorasPageState extends State<VendedorasPage> {
   double totalParaExibir = 0.00;
 
   List<DocumentSnapshot> documentsCopy = [];
+
+  String queryCriteria = "esteMes";
+
+  var maskFormatterDataApenasMes = new MaskTextInputFormatter(mask: '##/####', filter: { "#": RegExp(r'[0-9]') });
+  var maskFormatterDataCompleta = new MaskTextInputFormatter(mask: '##/##/####', filter: { "#": RegExp(r'[0-9]') });
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +99,8 @@ class _VendedorasPageState extends State<VendedorasPage> {
             ? _infos()
             : extratoPageVisible
             ?  _calculosPage()
+            : popUpInformeData
+            ? _popUpInformaData()
             : Container(height: 0.0, width: 0.0,),
     );
 
@@ -494,6 +505,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
     print(vendedora.salario.toStringAsFixed(2));
   }
 
+  /*
   Widget _calculosPage(){
 
     String queryCriteria = "esteMes";
@@ -529,6 +541,7 @@ class _VendedorasPageState extends State<VendedorasPage> {
               ), //btn fechar
             ],
           ),
+          SizedBox(height: 20.0,),
           //Container(color: Colors.amber, height: 500.0,)
           Container(
         height: 500,
@@ -710,32 +723,418 @@ class _VendedorasPageState extends State<VendedorasPage> {
 
 
   }
+   */
 
-  void updateTotal() {
 
-    _vendedorasModel.totalVendas=0.00;
-    _vendedorasModel.updateTotalVendas(0.00);
+  Widget _calculosPage(){
 
-    double provi=0.00;
 
-    documentsCopy.forEach((element) {
-      //_vendedorasModel.updateTotalVendas(element['comissao']);
-      provi = element['comissao']+provi;
-    });
+    //_placeValueInTotalInRightTime();
+    //_updateTotalInRightTime();
 
-    _vendedorasModel.updateTotalVendas(provi);
+    return Container(
+      height: 700.0,
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                width: 50.0,
+                height: 50.0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.redAccent,
+                    size: 30.0,
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    setState(() {
+                      infoPageVisible = true;
+                      extratoPageVisible = false;
+                    });
+                  },
+                ),
+              ), //btn fechar
+            ],
+          ),
+          SizedBox(height: 20.0,),
+          //Container(color: Colors.amber, height: 500.0,)
+          Container(
+        height: 500,
+        color: Colors.white,
+        child: Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(width: 4.0,),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: queryCriteria=="esteMes" ? Theme.of(context).primaryColor : Colors.amber,
+                    child: FlatButton(
+                      child: WidgetsConstructor().makeSimpleText("Este mês", Colors.black, 14.0),
+                      onPressed: (){
+                        setState(() {
+                          queryCriteria = "esteMes";
+                        });
+
+                      },
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: queryCriteria=="dia" ? Theme.of(context).primaryColor : Colors.amber,
+                    child: FlatButton(
+                      child: WidgetsConstructor().makeSimpleText("Dia específico", Colors.black, 14.0),
+                      onPressed: (){
+                        setState(() {
+                          queryCriteria = "dia";
+                          popUpInformeData = true;
+                          extratoPageVisible = false;
+                          _dateController.text="";
+
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    height: 50.0,
+                    color: queryCriteria=="mesEspecifico" ? Theme.of(context).primaryColor : Colors.amber,
+                    child: FlatButton(
+                      child: WidgetsConstructor().makeSimpleText("Mês específico", Colors.black, 14.0),
+                      onPressed: (){
+                        setState(() {
+                          queryCriteria = "mesEspecifico";
+                          popUpInformeData = true;
+                          extratoPageVisible = false;
+                          _dateController.text="";
+                        });
+
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.0,),
+              ],
+            ),
+            WidgetLista(queryCriteria), //aqui está a lista de cada comissao
+            Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 4.0),
+          child: Container(
+            height: 40.0,
+            decoration: WidgetsConstructor().myBoxDecoration(Theme.of(context).primaryColor, 2.0, 5.0),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  WidgetsConstructor().makeSimpleText("Total: ", Colors.grey, 16.0),
+                  //WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
+                  Observer(
+                    builder: (_) => WidgetsConstructor().makeSimpleText("R\$"+_vendedorasModel.totalVendas.toStringAsFixed(2), Colors.grey, 16.0),
+                  ),
+
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+
+          ],
+        ),
+      ),
+        ],
+      ),
+    );
+
+
   }
 
-  void _updateTotalInRightTime(){
+  Widget WidgetLista(String queryCriteria){
+
+    return Expanded(
+      child: StreamBuilder<QuerySnapshot>(
+        stream: Firestore.instance
+        //vou precisar criar o campo dataQueryVendor e colocar data+id
+            .collection("comissaoLiberada").where("vendedoraId", isEqualTo: vendedora.id)
+            .snapshots(), //este é um listener para observar esta coleção
+        builder: (context, snapshot) {
+          //começar a desenhar a tela
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+            case ConnectionState.none:
+              return Center(
+                //caso esteja vazio ou esperando exibir um circular progressbar no meio da tela
+                child: CircularProgressIndicator(),
+              );
+            default:
+              List<DocumentSnapshot> documents = snapshot.data.documents.toList(); //recuperamos o querysnapshot que estamso observando
+              //List<DocumentSnapshot> documentThisMonth = documents;
+              documentsCopy = documents;
+
+              /*
+              //_vendedorasModel.updateTotalVendas(0.00);
+              documentsCopy.forEach((element) {
+                element["data"].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString());
+
+              });
+               */
+
+
+
+              return ListView.builder(
+                //aqui vamos começar a construir a listview com os itens retornados
+                  itemCount: documentsCopy.length,
+                  itemBuilder: (context, index) {
+                    //updateTotal();
+                    if(queryCriteria=="esteMes"){
+
+                      if(index==documentsCopy.length-1){
+
+                        _updateTotalInRightTime(queryCriteria);
+
+                      }
+
+                      return documents[index].data['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())
+                          ? GestureDetector(
+                        onTap: () {
+
+                          //faça algo
+
+                        },
+                        child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  WidgetsConstructor().makeText(documentsCopy[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                  WidgetsConstructor().makeSimpleText(documentsCopy[index].data["data"], Colors.blueGrey[300], 15.0),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                          WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Colors.grey, 15.0),
+                                          WidgetsConstructor().makeSimpleText("Comissão liberada: "+documents[index].data["comissao"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+
+                                          //adicionar aqui o valor já pago
+                                          //criar uma área de pagamentos
+                                          //la o usuario vai poder adicionar os pagamentos feitos
+
+                                        ],
+                                      ),
+
+                                    ],
+                                  ),
+
+                                ],
+                              ),
+                            )
+                        ),
+                      ) : Container(color: Colors.red,);
+                    }
+
+                    else if(queryCriteria=="mesEspecifico"){
+
+                      if(index==documentsCopy.length-1){
+
+                        _updateTotalInRightTime(queryCriteria);
+                      }
+
+                      return documents[index].data['data'].toString().contains(_dateController.text)
+                          ? GestureDetector(
+                        onTap: () {
+
+                          //faça algo
+
+                        },
+                        child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  WidgetsConstructor().makeText(documentsCopy[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                  WidgetsConstructor().makeSimpleText(documentsCopy[index].data["data"], Colors.blueGrey[300], 15.0),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                          WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Colors.grey, 15.0),
+                                          WidgetsConstructor().makeSimpleText("Comissão devida: "+documents[index].data["comissao"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+
+                                          //adicionar aqui o valor já pago
+                                          //criar uma área de pagamentos
+                                          //la o usuario vai poder adicionar os pagamentos feitos
+
+                                        ],
+                                      ),
+
+                                    ],
+                                  ),
+
+                                ],
+                              ),
+                            )
+                        ),
+                      ) : Container(color: Colors.red,);
+
+                    }
+                    else if(queryCriteria=="dia"){
+
+                      if(index==documentsCopy.length-1){
+
+                        _updateTotalInRightTime(queryCriteria);
+                      }
+
+                      return documents[index].data['data'].toString().contains(_dateController.text)
+                          ? GestureDetector(
+                        onTap: () {
+
+                          //faça algo
+
+                        },
+                        child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  WidgetsConstructor().makeText(documentsCopy[index].data["cliente"], Colors.blueGrey, 16.0, 4.0, 4.0, "no"),
+                                  WidgetsConstructor().makeSimpleText(documentsCopy[index].data["data"], Colors.blueGrey[300], 15.0),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          //WidgetsConstructor().makeSimpleText("Entrada: "+documents[index].data["entrada"].toStringAsFixed(2), Colors.blueGrey[300], 15.0),
+                                          WidgetsConstructor().makeSimpleText("Total da venda: "+documents[index].data["valor"].toStringAsFixed(2), Colors.grey, 15.0),
+                                          WidgetsConstructor().makeSimpleText("Comissão devida: "+documents[index].data["comissao"].toStringAsFixed(2), Theme.of(context).primaryColor, 15.0),
+
+                                          //adicionar aqui o valor já pago
+                                          //criar uma área de pagamentos
+                                          //la o usuario vai poder adicionar os pagamentos feitos
+
+                                        ],
+                                      ),
+
+                                    ],
+                                  ),
+
+                                ],
+                              ),
+                            )
+                        ),
+                      ) : Container(color: Colors.red,);
+
+                    }
+                    else {
+                      //aqui ficarão os outros filtros
+                      return Container(color: Colors.red,);
+                    }
+
+                  });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _popUpInformaData(){
+
+    return Container(
+      height: 600.0,
+      color: Colors.white,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(height: 16.0,),
+            Container(
+              alignment: Alignment.topRight,
+              height: 50.0,
+              child: IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.redAccent,
+                  size: 30.0,
+                ),
+                color: Theme.of(context).primaryColor,
+                onPressed: () {
+                  setState(() {
+                    //fechar a popup
+                    popUpInformeData = false;
+                    extratoPageVisible = true;
+
+                  });
+                },
+              ),
+            ),
+            WidgetsConstructor().makeText("Informe data para buscar", Theme.of(context).primaryColor, 20.0, 30.0, 30.0, "center"),
+            SizedBox(height: 40.0,),
+            WidgetsConstructor().makeEditTextForDateFormat(_dateController, queryCriteria == "mesEspecifico" ? "Informe o mês e ano" : "Informe o dia, mês e ano", queryCriteria == "mesEspecifico" ? maskFormatterDataApenasMes : maskFormatterDataCompleta),
+            SizedBox(height: 35.0,),
+            Container(
+              height: 65.0,
+              color: Theme.of(context).primaryColor,
+              child: FlatButton(
+                child: WidgetsConstructor().makeSimpleText("Buscar", Colors.white, 18.0),
+                onPressed: (){
+                  setState(() {
+                    popUpInformeData = false;
+                    extratoPageVisible = true;
+                  });
+
+                },
+              ),
+            )
+          ],
+        ),
+      )
+    );
+
+  }
+
+
+  void _updateTotalInRightTime(String queryCriteria){
 
     Future.delayed(const Duration(milliseconds: 2000), () {
         //updateTotal();
-      updateTotalDoMes();
+      if(queryCriteria=="esteMes"){
+        updateTotalDoMes();
+      } else {
+        updateTotalDoMesEspecificoOuDia();
+      }
+
     });
 
   }
 
   void updateTotalDoMes(){
+
+    _vendedorasModel.totalVendas=0.00;
 
     documentsCopy.forEach((element) {
       if(element['data'].toString().contains(DateTime.now().month.toString()+"/"+DateTime.now().year.toString())){
@@ -745,10 +1144,20 @@ class _VendedorasPageState extends State<VendedorasPage> {
     });
 
 
-
   }
 
+  void updateTotalDoMesEspecificoOuDia(){
 
+    _vendedorasModel.totalVendas=0.00;
+
+    documentsCopy.forEach((element) {
+      if(element['data'].toString().contains(_dateController.text)){
+        _vendedorasModel.updateTotalVendas(element['comissao']);
+      }
+
+    });
+
+  }
 
   Widget buildRadioOptions(BuildContext context) {
     return Column(

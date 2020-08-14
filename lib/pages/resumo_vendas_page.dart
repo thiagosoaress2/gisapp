@@ -702,8 +702,6 @@ class _ResumoVendasPageState extends State<ResumoVendasPage> {
   }
 
 
-
-
 }
 
 
