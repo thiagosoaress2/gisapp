@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:gisapp/Models/new_sell_model.dart';
 import 'package:gisapp/Utils/currency_edittext_builder.dart';
@@ -105,6 +106,8 @@ class _NewSellState extends State<NewSellPage> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
 
+
+  var controller = new MoneyMaskedTextController(leftSymbol: 'R\$ ');
 
   @override
   Widget build(BuildContext context) {
@@ -732,7 +735,8 @@ class _NewSellState extends State<NewSellPage> {
                       children: <Widget>[
                         Container(
                           width: 240.0,
-                          child: CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_totalVendaController, "Total da venda"),
+                          child: WidgetsConstructor().makeFormEditTextNumberOnly(controller, "total da venda", "informe um valor"),
+                          //child: CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(controller, "Total da venda"),
                         ),
                         SizedBox(width: 5.0,),
                         Container(
