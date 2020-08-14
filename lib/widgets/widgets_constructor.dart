@@ -50,6 +50,17 @@ class WidgetsConstructor {
 
   }
 
+  Widget makeEditTextNumberOnly(TextEditingController controller, String labelTxt){
+
+    return TextField(
+        controller: controller,
+        decoration: InputDecoration(labelText: labelTxt),
+        keyboardType: TextInputType.number
+    );
+
+  }
+
+
   /* obs nao usar este. Existe uma classe especifica pra isso. Ver nos documentos */
   /*
   Widget makeEditTextForCurrency(MoneyMaskedTextController controller, String labelTxt){

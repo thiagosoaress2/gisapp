@@ -49,16 +49,15 @@ class _NewSellState extends State<NewSellPage> {
   List<ProductClass> _produtosCarrinho = [];
 
   double _valorEntradaVariable = 0.0;
+  double _totalVendaVariable = 0.0;
 
   var _maskFormatterDataVenda = new MaskTextInputFormatter(mask: '##/##/####', filter: { "#": RegExp(r'[0-9]')});
   final TextEditingController _dataVendaController = TextEditingController();
 
   final TextEditingController _quantidadeParcelamentosController = TextEditingController();
-  final TextEditingController _valorEntrada = TextEditingController();
-  //final _valorEntrada = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
+  var _valorEntrada = new MoneyMaskedTextController(leftSymbol: 'R\$ ');
   final TextEditingController _nomeCliente = TextEditingController();
-  //final _totalVenda = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
-  final TextEditingController _totalVendaController = TextEditingController();
+  //final TextEditingController _totalVendaController = TextEditingController();
   final TextEditingController _nBoletoController = TextEditingController();
 
   final TextEditingController _searchController = TextEditingController();
@@ -77,6 +76,17 @@ class _NewSellState extends State<NewSellPage> {
     });
 
     _totalVendaController.text="0";
+
+    //recuperando valor em double do textfield com mascara de dinheiro
+    _totalVendaController.afterChange = (String masked, double raw) {
+      //print("$masked | $raw");
+      _totalVendaVariable = raw;
+    };
+
+    _valorEntrada.afterChange = (String masked, double raw) {
+      //print("$masked | $raw");
+      _valorEntradaVariable = raw;
+    };
 
     /*
     _valorEntrada.addListener(() {
@@ -107,7 +117,7 @@ class _NewSellState extends State<NewSellPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>(); //para snackbar
 
 
-  var controller = new MoneyMaskedTextController(leftSymbol: 'R\$ ');
+  var _totalVendaController = new MoneyMaskedTextController(leftSymbol: 'R\$ ');
 
   @override
   Widget build(BuildContext context) {
@@ -683,7 +693,7 @@ class _NewSellState extends State<NewSellPage> {
                               child: Column(
                                 children: <Widget>[
                                   _formaPgto!="avista" && _formaPgto!="cartaodeb" ? WidgetsConstructor().makeFormEditTextNumberOnly(_quantidadeParcelamentosController, "Nº parcelas", "Informe a quantidade de parcelas"): Text(""),
-                                  _formaPgto!="avista" && _formaPgto!="cartaodeb" ? CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(_valorEntrada, "Entrada"): Text(""),
+                                  _formaPgto!="avista" && _formaPgto!="cartaodeb" ? WidgetsConstructor().makeEditTextNumberOnly(_valorEntrada, "Entrada") : Text(""),
                                 ],
                               )
                           )
@@ -735,7 +745,7 @@ class _NewSellState extends State<NewSellPage> {
                       children: <Widget>[
                         Container(
                           width: 240.0,
-                          child: WidgetsConstructor().makeFormEditTextNumberOnly(controller, "total da venda", "informe um valor"),
+                          child: WidgetsConstructor().makeFormEditTextNumberOnly(_totalVendaController, "total da venda", "informe um valor"),
                           //child: CurrencyEditTextBuilder().makeMoneyTextFormFieldSettings(controller, "Total da venda"),
                         ),
                         SizedBox(width: 5.0,),
@@ -759,36 +769,40 @@ class _NewSellState extends State<NewSellPage> {
                         color: Theme.of(context).primaryColor,
                         child: WidgetsConstructor().makeSimpleText("Registrar venda", Colors.white, 20.0),
                         onPressed: () async {
-                          print(_nBoletoController.text);
+
                           //registrar venda
-                          if (_formKey.currentState.validate()) { //
+                          //if (_formKey.currentState.validate()) { //
+                          if(_dataVendaController.text.isNotEmpty && _nomeCliente.text.isNotEmpty && _nBoletoController.text.isNotEmpty){
+
                             if(_produtosCarrinho.length!=0){
                               if(_totalVendaController.text.isEmpty){
                                 _displaySnackBar(context, "Informe o valor da venda");
                               } else {
-                                if(double.parse(_totalVendaController.text)<0.1 || _totalVendaController.text=="0.0"){
+                                //if(double.parse(_totalVendaController.text)<0.1 || _totalVendaController.text=="0.0"){
+                                if(_totalVendaVariable < 0.1 || _totalVendaVariable==0.0){
                                   _displaySnackBar(context, "Informe o valor da venda");
                                 } else {
                                   if(_vendedora.nome != null){
 
-                                    double _totalVendaTextInVariable = double.parse(_totalVendaController.text);
-
-
                                     //se chegou até aqui pode salvar a venda
                                     _newSellModel.updateIsUploading();
+
+                                    if(_valorEntrada.text.isEmpty){
+                                      _valorEntrada.text = "0.00";
+                                    }
+                                    if(_quantidadeParcelamentosController.text.isEmpty){
+                                      _quantidadeParcelamentosController.text = 1.toString();
+                                    }
+
                                     /*
                                 setState(() {
                                   _isUploading = true;
                                 });
                                  */
 
-                                    print("Valor entrada variable: "+_valorEntradaVariable.toStringAsFixed(2));
-                                    print("Valor entrada text"+_valorEntrada.text);
-                                    double teste = double.parse(_valorEntrada.text);
-                                    print(teste);
                                     //vamos preencher o objeto venda
                                     //SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, _newSellModel.totalVenda, _nBoletoController.text);
-                                    SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaTextInVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, double.parse(_valorEntrada.text), _newSellModel.totalVenda, _nBoletoController.text, double.parse(_valorEntrada.text));
+                                    SellClass venda = SellClass(_dataVendaController.text, formatDate(DateTime.now(), [mm, '/', yyyy]), _formaPgto, _nomeCliente.text, _isRegisteredClient ? _cliente.clienteId : "cliente sem registro" , _quantidadeParcelamentosController.text==null ? 1 : int.parse(_quantidadeParcelamentosController.text), _totalVendaVariable, _vendedora.nome, _vendedora.id, _produtosCarrinho, _valorEntradaVariable, _newSellModel.totalVenda, _nBoletoController.text, _valorEntradaVariable);
                                     //obs: Valor pago no ato da venda é a entradda. Quando for registrar um pagamento de parcela o valor pago será informado pelo usuario
 
 
